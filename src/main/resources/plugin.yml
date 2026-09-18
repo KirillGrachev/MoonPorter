@@ -1,0 +1,30 @@
+name: MoonPorter
+version: '${project.version}'
+main: dev.moonlight.moonporter.MoonPorter
+api-version: 1.16
+description: Cargo delivery between points
+authors: [MishaNeYT, Ney]
+
+# All dependencies are optional. Without them the plugin starts
+# and only disables the features they provide:
+#   Vault      — no money reward on delivery
+#   Citizens   — no NPC pickup (use /moonporter give)
+#   WorldGuard — regions from the config are not checked
+softdepend: [Vault, Citizens, WorldGuard]
+
+commands:
+  moonporter:
+    description: Manage the MoonPorter plugin
+    usage: /moonporter <reload|give>
+    aliases: [mporter, mp]
+
+permissions:
+  moonporter.admin:
+    description: Access to the MoonPorter admin commands
+    default: op
+  moonporter.use:
+    description: Ability to pick up and deliver cargo (used when settings.permissions.enabled)
+    default: true
+  moonporter.bypass.cooldown:
+    description: Bypass of the delay between deliveries
+    default: false

@@ -1,0 +1,100 @@
+# Placeholders: {player}, {tier}, {weight}, {seconds}, {amount}, {label}, {tiers}, {regions}, {count}, {line}
+
+settings:
+  enabled: true # Full on/off switch of the plugin
+  material: BARREL # Cargo block material shown above the player
+  title:
+    enabled: true # Show titles at all
+    fade_in: 20 # Title fade-in time (in ticks)
+    stay: 40 # Title display time (in ticks)
+    fade_out: 20 # Title fade-out time (in ticks)
+  delivery:
+    trigger: SNEAK_TOGGLE # SNEAK_TOGGLE — deliver on Shift press
+    timeout: 15 # Delivery time limit (in seconds)
+    radius: 0.0 # Delivery radius from the pickup point (in blocks), 0 — no check
+  cooldown:
+    enabled: false # Delay between deliveries
+    time: 30 # Cooldown duration (in seconds)
+  permissions:
+    enabled: false # Enable permission system (admin, use, bypass_cooldown)
+    admin: "moonporter.admin"
+    use: "moonporter.use"
+    bypass_cooldown: "moonporter.bypass.cooldown"
+  npc:
+    ids: # Citizens NPC ids that hand out cargo
+      - 45
+  allowed_worlds: # Worlds where carrying is active
+    - "lobby"
+  allowed_regions: # WorldGuard regions where delivery is allowed
+    - "porter" # Empty list — deliver anywhere in an allowed world
+  porters:
+    low:
+      name: "&eBarrel with weight {weight}"
+      reward: "5-10" # Format "min-max"
+      weight: 1 # Slowness amplifier applied to the carrier
+    normal:
+      name: "&6Barrel with weight {weight}"
+      reward: "10-25"
+      weight: 2
+    large:
+      name: "&cBarrel with weight {weight}"
+      reward: "25-40"
+      weight: 3
+
+messages:
+  prefix: "#42fffc&lMoon&f&lPorter &7» &f"
+  reward_format: "{amount}$" # Format of the payout sum inside delivery.success
+
+  pickup:
+    success:
+      enabled: true
+      title: "&a✔"
+      subtitle: "&fYou took the cargo"
+    denied:
+      enabled: true
+      title: "&cError!"
+      subtitle: "&fYou are already carrying cargo"
+
+  delivery:
+    success:
+      enabled: true
+      title: "&aGood job!"
+      subtitle: "&fYou received &e{amount}"
+
+  flight:
+    enabled: true
+    title: "&cError!"
+    subtitle: "&fDisable flight"
+
+  gamemode:
+    enabled: true
+    title: "&cError!"
+    subtitle: "&fSurvival mode only"
+
+  timeout:
+    enabled: true
+    title: "&cError!"
+    subtitle: "&fYou did not deliver the cargo in time"
+
+  cooldown:
+    enabled: true
+    title: "&c⌛ Cooldown"
+    subtitle: "&fWait &e{seconds} more sec."
+
+  no_permission:
+    enabled: true
+    title: "&cError!"
+    subtitle: "&fNot enough permissions"
+
+  command:
+    no_permission: "&cYou don't have permission for this command."
+    player_only: "&cThis command is available to players only."
+    reload_success: "&aConfiguration reloaded. Cancelled deliveries: &e{count}"
+    reload_entry: " &7• &f{line}" # Format of a single report line
+    usage:
+      - ""
+      - " &e/{label} reload &7— reload the configuration"
+      - " &e/{label} give [tier] &7— hand out cargo"
+      - " &7Tiers: &f{tiers}"
+      - " &7Delivery regions: &f{regions}"
+      - ""

@@ -1,0 +1,64 @@
+# Test data for ConfigManager / PorterTierRegistry unit tests.
+# Values intentionally differ from the defaults so every assertion is meaningful.
+
+settings:
+  enabled: false
+  material: CHEST
+  title:
+    enabled: true
+    fade_in: 5
+    stay: 50
+    fade_out: 7
+  delivery:
+    trigger: SNEAK_HOLD
+    timeout: 42
+    radius: 3.5
+  cooldown:
+    enabled: true
+    time: 45
+  permissions:
+    enabled: true
+    admin: "test.admin"
+    use: "test.use"
+    bypass_cooldown: "test.bypass"
+  npc:
+    ids:
+      - 45
+      - 46
+  allowed_worlds:
+      - "test_world"
+  allowed_regions:
+    - "test_region"
+  porters:
+    test_low:
+      name: "&eТестовый груз {weight}"
+      reward: "1-2"
+      weight: 1
+    test_high:
+      name: "&cТестовый тяжёлый {weight}"
+      reward: "30-40"
+      weight: 3
+
+messages:
+  prefix: "&8[&cT&8] &f"
+  reward_format: "{amount} монет"
+
+  pickup:
+    success:
+      enabled: true
+      title: "&aТест"
+      subtitle: "&fВзят"
+    denied:
+      enabled: false
+      title: "&cОтказ"
+      subtitle: "&fЗанят"
+
+  command:
+    no_permission: "&cНет прав."
+    player_only: "&cТолько игроки."
+    reload_success: "&aReloaded: {count}"
+    reload_entry: " - {line}"
+    usage:
+      - ""
+      - " &e/{label} help"
+      - ""

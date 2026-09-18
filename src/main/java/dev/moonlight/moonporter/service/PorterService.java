@@ -1,0 +1,351 @@
+package dev.moonlight.moonporter.service;
+
+import dev.moonlight.moonporter.config.MoonPorterConfig;
+import dev.moonlight.moonporter.config.PorterTier;
+import dev.moonlight.moonporter.config.type.CancelReason;
+import dev.moonlight.moonporter.config.type.TitleType;
+import dev.moonlight.moonporter.porter.DeliverySession;
+import dev.moonlight.moonporter.porter.DeliveryWatchdog;
+import dev.moonlight.moonporter.porter.cargo.Cargo;
+import dev.moonlight.moonporter.porter.cargo.CargoVisual;
+import dev.moonlight.moonporter.porter.cargo.CargoVisualFactory;
+import dev.moonlight.moonporter.registry.CooldownRegistry;
+import dev.moonlight.moonporter.registry.PorterRegistry;
+import dev.moonlight.moonporter.registry.PorterTierRegistry;
+import dev.moonlight.moonporter.util.RangeUtil;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+/**
+ * Основная логика переноски груза: выдача, сдача и отмена.
+ *
+ * Класс ничего не знает о способе выдачи (NPC, команда, сторонний плагин) —
+ * все точки входа вызывают одни и те же публичные методы.
+ */
+public final class PorterService {
+
+    /** Длительность эффекта замедления: снимается при сдаче или отмене груза */
+    private static final int EFFECT_DURATION_TICKS = Integer.MAX_VALUE;
+
+    private final MoonPorterConfig config;
+    private final PorterRegistry porterRegistry;
+    private final PorterTierRegistry tierRegistry;
+    private final CooldownRegistry cooldownRegistry;
+    private final DeliveryWatchdog watchdog;
+    private final CargoVisualFactory cargoVisualFactory;
+    private final MessageService messageService;
+    private final EconomyService economyService;
+    private final RegionProvider regionProvider;
+    private final CooldownService cooldownService;
+
+    public PorterService(@NotNull MoonPorterConfig config,
+                         @NotNull PorterRegistry porterRegistry,
+                         @NotNull PorterTierRegistry tierRegistry,
+                         @NotNull CooldownRegistry cooldownRegistry,
+                         @NotNull DeliveryWatchdog watchdog,
+                         @NotNull CargoVisualFactory cargoVisualFactory,
+                         @NotNull MessageService messageService,
+                         @NotNull EconomyService economyService,
+                         @NotNull RegionProvider regionProvider,
+                         @NotNull CooldownService cooldownService) {
+        this.config = config;
+        this.porterRegistry = porterRegistry;
+        this.tierRegistry = tierRegistry;
+        this.cooldownRegistry = cooldownRegistry;
+        this.watchdog = watchdog;
+        this.cargoVisualFactory = cargoVisualFactory;
+        this.messageService = messageService;
+        this.economyService = economyService;
+        this.regionProvider = regionProvider;
+        this.cooldownService = cooldownService;
+    }
+
+    /**
+     * Выдаёт игроку случайный груз из зарегистрированных уровней.
+     *
+     * @param player игрок, кликнувший по NPC
+     */
+    public void pickup(@NotNull Player player) {
+        pickup(player, tierRegistry.getRandomTier());
+    }
+
+    /**
+     * Выдаёт игроку груз указанного уровня.
+     *
+     * @param player игрок
+     * @param tier   уровень груза
+     */
+    public void pickup(@NotNull Player player, @NotNull PorterTier tier) {
+
+        if (!config.isEnabled()) {
+            return;
+        }
+
+        if (!isAllowedWorld(player)) {
+            return;
+        }
+
+        if (porterRegistry.isCarrying(player)) {
+
+            messageService.sendTitle(player, TitleType.PICKUP_DENIED);
+            return;
+
+        }
+
+        if (!canUse(player)) {
+
+            messageService.sendTitle(player, TitleType.NO_PERMISSION);
+            return;
+
+        }
+
+        UUID playerId = player.getUniqueId();
+
+        if (isOnCooldown(playerId)) {
+
+            messageService.sendTitle(player, TitleType.COOLDOWN, Map.of(
+                    "seconds", cooldownRegistry.getRemainingSeconds(playerId)
+            ));
+
+            return;
+
+        }
+
+        Cargo cargo = cargoVisualFactory.create(player, tier);
+        CargoVisual visual = cargoVisualFactory.spawn(player, cargo);
+
+        attachWeightEffect(player, tier.weight());
+
+        long expiresAt = System.currentTimeMillis() + config.getDeliveryTimeout() * 1000L;
+
+        porterRegistry.start(new DeliverySession(playerId, cargo, visual, expiresAt));
+        watchdog.ensureRunning();
+
+        if (config.isCooldownEnabled() && !cooldownService.isBypassed(player)) {
+            cooldownRegistry.start(playerId, config.getCooldownTime());
+        }
+
+        messageService.sendTitle(player, TitleType.PICKUP_SUCCESS, Map.of(
+                "player", player.getName(),
+                "tier", tier.id(),
+                "weight", tier.weight(),
+                "seconds", config.getDeliveryTimeout()
+        ));
+
+    }
+
+    /**
+     * Пытается сдать груз в текущей точке.
+     *
+     * @param player игрок, сдающий груз
+     */
+    public void deliver(@NotNull Player player) {
+
+        if (!config.isEnabled()) {
+            return;
+        }
+
+        DeliverySession session = porterRegistry.getSession(player.getUniqueId());
+
+        if (session == null) {
+            return;
+        }
+
+        if (!isAllowedWorld(player) || !isAllowedDeliveryPoint(player, session.cargo())) {
+            return;
+        }
+
+        int reward = resolveReward(session.cargo());
+
+        economyService.deposit(player, reward);
+
+        cancel(player, CancelReason.DELIVERED, Map.of(
+                "amount", messageService.formatReward(reward)
+        ));
+
+    }
+
+    /**
+     * Отменяет переноску по причине и уведомляет игрока.
+     *
+     * @param player игрок
+     * @param reason причина отмены
+     */
+    public void cancel(@NotNull Player player, @NotNull CancelReason reason) {
+        cancel(player, reason, null);
+    }
+
+    /**
+     * Отменяет переноску по причине с подстановкой плейсхолдеров в титул.
+     *
+     * @param player       игрок
+     * @param reason       причина отмены
+     * @param placeholders плейсхолдеры для титула
+     */
+    public void cancel(@NotNull Player player,
+                       @NotNull CancelReason reason,
+                       @Nullable Map<String, ?> placeholders) {
+
+        DeliverySession session = porterRegistry.take(player.getUniqueId());
+
+        if (session == null) {
+            return;
+        }
+
+        session.visual().remove();
+
+        removeWeightEffect(player);
+
+        if (!reason.isSilent() && player.isOnline()) {
+            messageService.sendTitle(player, reason.getTitleType(), placeholders);
+        }
+
+    }
+
+    /**
+     * Снимает все грузы — используется при выключении плагина и на /reload.
+     * Визуализации удаляются из мира, эффекты снимаются с онлайн-игроков.
+     *
+     * @return количество снятых переносок
+     */
+    public int cancelAll() {
+
+        List<DeliverySession> sessions = porterRegistry.snapshot();
+
+        for (DeliverySession session : sessions) {
+
+            session.visual().remove();
+
+            Player player = Bukkit.getPlayer(session.playerId());
+
+            if (player != null && player.isOnline()) {
+                removeWeightEffect(player);
+            }
+
+        }
+
+        porterRegistry.clear();
+        cooldownRegistry.clear();
+
+        return sessions.size();
+
+    }
+
+    /**
+     * Считает случайную награду за груз.
+     *
+     * @param cargo описание груза
+     * @return сумма награды
+     */
+    private int resolveReward(@NotNull Cargo cargo) {
+
+        PorterTier tier = cargo.tier();
+
+        if (tier.rewardMax() <= tier.rewardMin()) {
+            return Math.max(0, tier.rewardMin());
+        }
+
+        return RangeUtil.random(
+                new int[]{tier.rewardMin(), tier.rewardMax()},
+                tier.rewardMin()
+        );
+
+    }
+
+    /**
+     * Накладывает эффект замедления, соответствующий весу груза.
+     *
+     * @param player несущий игрок
+     * @param weight вес груза из конфига
+     */
+    private void attachWeightEffect(@NotNull Player player, int weight) {
+
+        if (weight <= 0) {
+            return;
+        }
+
+        // ambient=false, particles=false — клиенту не отправляются лишние пакеты частиц
+        player.addPotionEffect(new PotionEffect(
+                PotionEffectType.SLOW,
+                EFFECT_DURATION_TICKS,
+                weight - 1,
+                false,
+                false
+        ));
+
+    }
+
+    /**
+     * Снимает эффект замедления.
+     *
+     * @param player игрок
+     */
+    private void removeWeightEffect(@NotNull Player player) {
+        player.removePotionEffect(PotionEffectType.SLOW);
+    }
+
+    /**
+     * Проверяет мир игрока по белому списку.
+     *
+     * @param player игрок
+     * @return true если мир разрешён
+     */
+    private boolean isAllowedWorld(@NotNull Player player) {
+        return config.getAllowedWorlds().contains(player.getWorld().getName());
+    }
+
+    /**
+     * Проверяет задержку между переносками.
+     *
+     * @param playerId UUID игрока
+     * @return true если действует кулдаун
+     */
+    private boolean isOnCooldown(@NotNull UUID playerId) {
+
+        if (!config.isCooldownEnabled()) {
+            return false;
+        }
+
+        return cooldownRegistry.isActive(playerId);
+
+    }
+
+    /**
+     * Проверяет точку сдачи: радиус от места выдачи и регион WorldGuard.
+     *
+     * @param player игрок
+     * @param cargo  описание груза
+     * @return true если сдача разрешена
+     */
+    private boolean isAllowedDeliveryPoint(@NotNull Player player, @NotNull Cargo cargo) {
+
+        if (!cargo.isWithinRadius(player, config.getDeliveryRadius())) {
+            return false;
+        }
+
+        if (config.getAllowedRegions().isEmpty()) {
+            return true;
+        }
+
+        return regionProvider.isInAnyRegion(player.getLocation(), config.getAllowedRegions());
+
+    }
+
+    /**
+     * Проверяет право игрока на переноску груза.
+     *
+     * @param player игрок
+     * @return true если система прав выключена или право выдано
+     */
+    private boolean canUse(@NotNull Player player) {
+        return !config.arePermissionsEnabled() || player.hasPermission(config.getPermissionUse());
+    }
+}

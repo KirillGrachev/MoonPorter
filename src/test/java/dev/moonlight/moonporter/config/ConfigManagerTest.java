@@ -1,0 +1,141 @@
+package dev.moonlight.moonporter.config;
+
+import dev.moonlight.moonporter.config.type.DeliveryTrigger;
+import dev.moonlight.moonporter.config.type.TitleType;
+import org.bukkit.Material;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+/**
+ * Тесты разбора конфигурации на тестовых данных из test-resources.
+ */
+class ConfigManagerTest {
+
+    @Test
+    @DisplayName("Читает основные настройки из тестового конфига")
+    void readsSettingsFromTestConfig() {
+
+        MoonPorterConfig config = TestConfigs.load("/test-config.yml");
+
+        assertFalse(config.isEnabled());
+        assertEquals(Material.CHEST, config.getMaterial());
+
+        assertTrue(config.isTitleEnabled());
+        assertEquals(5, config.getTitleFadeIn());
+        assertEquals(50, config.getTitleStay());
+        assertEquals(7, config.getTitleFadeOut());
+
+        assertEquals(DeliveryTrigger.SNEAK_HOLD, config.getDeliveryTrigger());
+        assertEquals(42, config.getDeliveryTimeout());
+        assertEquals(3.5D, config.getDeliveryRadius());
+
+        assertTrue(config.isCooldownEnabled());
+        assertEquals(45, config.getCooldownTime());
+
+    }
+
+    @Test
+    @DisplayName("Читает права, миры, регионы и NPC")
+    void readsZonesAndPermissions() {
+
+        MoonPorterConfig config = TestConfigs.load("/test-config.yml");
+
+        assertTrue(config.arePermissionsEnabled());
+        assertEquals("test.admin", config.getPermissionAdmin());
+        assertEquals("test.use", config.getPermissionUse());
+        assertEquals("test.bypass", config.getPermissionBypassCooldown());
+
+        assertEquals(List.of(45, 46), config.getNpcIds());
+        assertEquals(List.of("test_world"), config.getAllowedWorlds());
+        assertEquals(List.of("test_region"), config.getAllowedRegions());
+
+    }
+
+    @Test
+    @DisplayName("Читает уровни груза в порядке объявления")
+    void readsPorterTiers() {
+
+        MoonPorterConfig config = TestConfigs.load("/test-config.yml");
+
+        List<PorterTier> tiers = config.getPorterTiers();
+
+        assertEquals(2, tiers.size());
+
+        PorterTier low = tiers.get(0);
+
+        assertEquals("test_low", low.id());
+        assertEquals(1, low.rewardMin());
+        assertEquals(2, low.rewardMax());
+        assertEquals(1, low.weight());
+        assertTrue(low.name().contains("Тестовый"));
+
+        PorterTier high = tiers.get(1);
+
+        assertEquals("test_high", high.id());
+        assertEquals(30, high.rewardMin());
+        assertEquals(40, high.rewardMax());
+        assertEquals(3, high.weight());
+
+    }
+
+    @Test
+    @DisplayName("Окрашивает сообщения и читает титулы")
+    void readsAndColorsMessages() {
+
+        MoonPorterConfig config = TestConfigs.load("/test-config.yml");
+
+        // &-коды преобразованы в section sign
+        assertTrue(config.getPrefix().contains("§8["));
+        assertTrue(config.getCommandNoPermissionMessage().contains("§c"));
+
+        assertEquals("{amount} монет", config.getRewardFormat());
+        assertEquals("§aReloaded: {count}", config.getReloadSuccessMessage());
+        assertEquals(3, config.getCommandUsageMessage().size());
+
+        TitleMessage success = config.getTitle(TitleType.PICKUP_SUCCESS);
+
+        assertTrue(success.enabled());
+        assertEquals("§aТест", success.title());
+        assertEquals("§fВзят", success.subtitle());
+
+        // enabled: false отключает титул целиком
+        assertTrue(config.getTitle(TitleType.PICKUP_DENIED).isDisabled());
+
+        // отсутствующая секция — пустой титул
+        assertTrue(config.getTitle(TitleType.FLIGHT).isDisabled());
+
+    }
+
+    @Test
+    @DisplayName("Пустой конфиг даёт значения по умолчанию")
+    void fallsBackToDefaultsOnEmptyConfig() {
+
+        MoonPorterConfig config = TestConfigs.empty();
+
+        assertTrue(config.isEnabled());
+        assertEquals(Material.BARREL, config.getMaterial());
+
+        assertEquals(DeliveryTrigger.SNEAK_TOGGLE, config.getDeliveryTrigger());
+        assertEquals(15, config.getDeliveryTimeout());
+        assertEquals(0.0D, config.getDeliveryRadius());
+
+        assertFalse(config.isCooldownEnabled());
+        assertEquals(30, config.getCooldownTime());
+
+        assertFalse(config.arePermissionsEnabled());
+        assertEquals("moonporter.admin", config.getPermissionAdmin());
+
+        assertEquals(20, config.getTitleFadeIn());
+        assertEquals(40, config.getTitleStay());
+        assertEquals(20, config.getTitleFadeOut());
+
+        assertTrue(config.getPorterTiers().isEmpty());
+
+    }
+}
