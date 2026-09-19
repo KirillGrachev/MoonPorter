@@ -142,23 +142,4 @@ public final class DeliveryBossBarService {
         ));
 
     }
-
-    /**
-     * Существует ли полоса игрока.
-     *
-     * @param player игрок
-     * @return true если полоса активна
-     */
-    public boolean isShown(@NotNull Player player) {
-        return bars.containsKey(player.getUniqueId());
-    }
-
-    /**
-     * Количество активных полос.
-     *
-     * @return число полос
-     */
-    public int size() {
-        return bars.size();
-    }
 }
