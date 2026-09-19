@@ -1,5 +1,6 @@
 package dev.moonlight.moonporter.config;
 
+import dev.moonlight.moonporter.config.type.CargoMode;
 import dev.moonlight.moonporter.config.type.DeliveryTrigger;
 import dev.moonlight.moonporter.config.type.TitleType;
 import org.bukkit.Material;
@@ -20,6 +21,8 @@ public interface MoonPorterConfig {
     @NotNull Material getMaterial();
 
     /* Груз */
+
+    @NotNull CargoMode getCargoMode();
 
     boolean isCargoNameVisible();
 

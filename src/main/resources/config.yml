@@ -4,6 +4,9 @@ settings:
   enabled: true # Full on/off switch of the plugin
   material: BARREL # Cargo block material shown above the player
   cargo:
+    mode: BOTH # HEAD — visual above the head only.
+    # INVENTORY — inventory item only.
+    # BOTH — head visual and inventory item together.
     name_visible: true # Show the cargo name above the entity riding the player
   violations:
     reset_flight: true # Turn flight off on violation; false — only take the cargo away

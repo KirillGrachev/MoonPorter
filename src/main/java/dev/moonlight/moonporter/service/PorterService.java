@@ -2,6 +2,7 @@ package dev.moonlight.moonporter.service;
 
 import dev.moonlight.moonporter.config.MoonPorterConfig;
 import dev.moonlight.moonporter.config.PorterTier;
+import dev.moonlight.moonporter.config.type.CargoMode;
 import dev.moonlight.moonporter.config.type.CancelReason;
 import dev.moonlight.moonporter.config.type.TitleType;
 import dev.moonlight.moonporter.porter.DeliverySession;
@@ -138,7 +139,9 @@ public final class PorterService {
 
         }
 
-        if (!cargoItemService.hasFreeSlot(player)) {
+        CargoMode mode = config.getCargoMode();
+
+        if (mode.hasInventory() && !cargoItemService.hasFreeSlot(player)) {
 
             messageService.sendTitle(player, TitleType.PICKUP_NO_SPACE);
             return;
@@ -156,8 +159,13 @@ public final class PorterService {
                 player.getLocation().clone()
         );
 
-        cargoItemService.give(player, cargo);
-        FallingBlockVisual visual = FallingBlockVisual.spawn(player, cargo, config.isCargoNameVisible());
+        if (mode.hasInventory()) {
+            cargoItemService.give(player, cargo);
+        }
+
+        FallingBlockVisual visual = mode.hasHead()
+                ? FallingBlockVisual.spawn(player, cargo, config.isCargoNameVisible())
+                : new FallingBlockVisual(null);
 
         attachWeightEffect(player, tier.weight());
 
@@ -210,7 +218,7 @@ public final class PorterService {
 
         }
 
-        if (!cargoItemService.hasCargoItem(player)) {
+        if (config.getCargoMode().hasInventory() && !cargoItemService.hasCargoItem(player)) {
 
             cancel(player, CancelReason.CARGO_LOST);
             return;
@@ -257,7 +265,10 @@ public final class PorterService {
         lastDenyWarnings.remove(player.getUniqueId());
 
         session.visual().remove();
-        cargoItemService.removeAll(player);
+
+        if (config.getCargoMode().hasInventory()) {
+            cargoItemService.removeAll(player);
+        }
 
         removeWeightEffect(player);
 

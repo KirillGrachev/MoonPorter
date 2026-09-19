@@ -110,11 +110,12 @@ public final class FallingBlockVisual {
     }
 
     /**
-     * Жива ли ещё сущность визуализации.
+     * В порядке ли визуализация.
      *
-     * @return true если сущность существует в мире
+     * @return true если визуал отключён (сущности нет и терять нечего)
+     *         или сущность жива; false если сущность уничтожили извне
      */
     public boolean isAlive() {
-        return fallingBlock != null && fallingBlock.isValid();
+        return fallingBlock == null || fallingBlock.isValid();
     }
 }

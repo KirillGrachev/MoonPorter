@@ -1,6 +1,7 @@
 package dev.moonlight.moonporter.config;
 
 import dev.moonlight.moonporter.MoonPorter;
+import dev.moonlight.moonporter.config.type.CargoMode;
 import dev.moonlight.moonporter.config.type.DeliveryTrigger;
 import dev.moonlight.moonporter.config.type.TitleType;
 import dev.moonlight.moonporter.util.HexColorUtil;
@@ -37,6 +38,7 @@ public final class ConfigManager implements MoonPorterConfig {
 
     private static final String PATH_ENABLED = "settings.enabled";
     private static final String PATH_MATERIAL = "settings.material";
+    private static final String PATH_CARGO_MODE = "settings.cargo.mode";
     private static final String PATH_CARGO_NAME_VISIBLE = "settings.cargo.name_visible";
     private static final String PATH_RESET_FLIGHT = "settings.violations.reset_flight";
     private static final String PATH_RESET_GAMEMODE = "settings.violations.reset_gamemode";
@@ -69,6 +71,7 @@ public final class ConfigManager implements MoonPorterConfig {
 
     private boolean enabled;
     private Material material;
+    private CargoMode cargoMode;
     private boolean cargoNameVisible;
     private boolean resetFlight;
     private boolean resetGamemode;
@@ -155,6 +158,7 @@ public final class ConfigManager implements MoonPorterConfig {
         enabled = config.getBoolean(PATH_ENABLED, true);
         material = readMaterial();
 
+        cargoMode = readEnum(PATH_CARGO_MODE, CargoMode.class, CargoMode.BOTH);
         cargoNameVisible = config.getBoolean(PATH_CARGO_NAME_VISIBLE, true);
 
         resetFlight = config.getBoolean(PATH_RESET_FLIGHT, true);
@@ -452,6 +456,11 @@ public final class ConfigManager implements MoonPorterConfig {
     @Override
     public @NotNull Material getMaterial() {
         return material;
+    }
+
+    @Override
+    public @NotNull CargoMode getCargoMode() {
+        return cargoMode;
     }
 
     @Override

@@ -1,5 +1,6 @@
 package dev.moonlight.moonporter.config;
 
+import dev.moonlight.moonporter.config.type.CargoMode;
 import dev.moonlight.moonporter.config.type.DeliveryTrigger;
 import dev.moonlight.moonporter.config.type.TitleType;
 import org.bukkit.Material;
@@ -134,6 +135,7 @@ class ConfigManagerTest {
         assertTrue(config.isEnabled());
         assertEquals(Material.BARREL, config.getMaterial());
 
+        assertEquals(CargoMode.BOTH, config.getCargoMode());
         assertTrue(config.isCargoNameVisible());
         assertTrue(config.isResetFlightEnabled());
         assertTrue(config.isResetGamemodeEnabled());
