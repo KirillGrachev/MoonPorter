@@ -1,7 +1,7 @@
 package dev.moonlight.moonporter.porter;
 
 import dev.moonlight.moonporter.porter.cargo.Cargo;
-import dev.moonlight.moonporter.porter.cargo.CargoVisual;
+import dev.moonlight.moonporter.porter.cargo.FallingBlockVisual;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
@@ -12,12 +12,12 @@ import java.util.UUID;
  *
  * @param playerId  UUID несущего игрока
  * @param cargo     описание груза
- * @param visual    визуализация груза
+ * @param visual    визуализация груза над головой
  * @param expiresAt момент истечения времени доставки (System.currentTimeMillis)
  */
 public record DeliverySession(@NotNull UUID playerId,
                               @NotNull Cargo cargo,
-                              @NotNull CargoVisual visual,
+                              @NotNull FallingBlockVisual visual,
                               long expiresAt) {
 
     /**

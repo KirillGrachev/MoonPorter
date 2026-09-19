@@ -1,7 +1,6 @@
 package dev.moonlight.moonporter.config;
 
 import dev.moonlight.moonporter.MoonPorter;
-import dev.moonlight.moonporter.config.type.CargoVisualType;
 import dev.moonlight.moonporter.config.type.DeliveryTrigger;
 import dev.moonlight.moonporter.config.type.TitleType;
 import dev.moonlight.moonporter.util.HexColorUtil;
@@ -38,12 +37,7 @@ public final class ConfigManager implements MoonPorterConfig {
 
     private static final String PATH_ENABLED = "settings.enabled";
     private static final String PATH_MATERIAL = "settings.material";
-    private static final String PATH_CARGO_VISUAL = "settings.cargo.visual";
     private static final String PATH_CARGO_NAME_VISIBLE = "settings.cargo.name_visible";
-    private static final String PATH_HANDS_FORWARD = "settings.cargo.hands_offset.forward";
-    private static final String PATH_HANDS_HEIGHT = "settings.cargo.hands_offset.height";
-    private static final String PATH_HANDS_LEFT = "settings.cargo.hands_offset.left";
-    private static final String PATH_NAME_HEIGHT = "settings.cargo.name_height";
     private static final String PATH_RESET_FLIGHT = "settings.violations.reset_flight";
     private static final String PATH_RESET_GAMEMODE = "settings.violations.reset_gamemode";
     private static final String PATH_TITLE_ENABLED = "settings.title.enabled";
@@ -71,17 +65,11 @@ public final class ConfigManager implements MoonPorterConfig {
     private static final String PATH_COMMAND_USAGE = "messages.command.usage";
     private static final String PATH_RELOAD_SUCCESS = "messages.command.reload_success";
     private static final String PATH_COMMAND_NO_TIERS = "messages.command.no_tiers";
-    private static final String PATH_COMMAND_VISUAL_UPDATED = "messages.command.visual_updated";
     private static final String PATH_RELOAD_REPORT = "messages.command.reload_report";
 
     private boolean enabled;
     private Material material;
-    private CargoVisualType cargoVisualType;
     private boolean cargoNameVisible;
-    private double handsForward;
-    private double handsHeight;
-    private double handsLeft;
-    private double nameHeight;
     private boolean resetFlight;
     private boolean resetGamemode;
     private boolean titleEnabled;
@@ -110,7 +98,6 @@ public final class ConfigManager implements MoonPorterConfig {
     private List<String> commandUsageMessage;
     private String reloadSuccessMessage;
     private String commandNoTiersMessage;
-    private String commandVisualUpdatedMessage;
     private List<String> reloadReportMessage;
 
     private final Map<TitleType, TitleMessage> titles = new EnumMap<>(TitleType.class);
@@ -168,12 +155,7 @@ public final class ConfigManager implements MoonPorterConfig {
         enabled = config.getBoolean(PATH_ENABLED, true);
         material = readMaterial();
 
-        cargoVisualType = readEnum(PATH_CARGO_VISUAL, CargoVisualType.class, CargoVisualType.HEAD);
         cargoNameVisible = config.getBoolean(PATH_CARGO_NAME_VISIBLE, true);
-        handsForward = config.getDouble(PATH_HANDS_FORWARD, 0.50D);
-        handsHeight = config.getDouble(PATH_HANDS_HEIGHT, 1.15D);
-        handsLeft = config.getDouble(PATH_HANDS_LEFT, 0.0D);
-        nameHeight = config.getDouble(PATH_NAME_HEIGHT, 0.75D);
 
         resetFlight = config.getBoolean(PATH_RESET_FLIGHT, true);
         resetGamemode = config.getBoolean(PATH_RESET_GAMEMODE, true);
@@ -211,7 +193,6 @@ public final class ConfigManager implements MoonPorterConfig {
         commandUsageMessage = readColoredList(PATH_COMMAND_USAGE);
         reloadSuccessMessage = readMessageString(PATH_RELOAD_SUCCESS);
         commandNoTiersMessage = readMessageString(PATH_COMMAND_NO_TIERS);
-        commandVisualUpdatedMessage = readMessageString(PATH_COMMAND_VISUAL_UPDATED);
         reloadReportMessage = readColoredList(PATH_RELOAD_REPORT);
 
         if (reloadReportMessage.isEmpty()) {
@@ -474,33 +455,8 @@ public final class ConfigManager implements MoonPorterConfig {
     }
 
     @Override
-    public @NotNull CargoVisualType getCargoVisualType() {
-        return cargoVisualType;
-    }
-
-    @Override
     public boolean isCargoNameVisible() {
         return cargoNameVisible;
-    }
-
-    @Override
-    public double getHandsForward() {
-        return handsForward;
-    }
-
-    @Override
-    public double getHandsHeight() {
-        return handsHeight;
-    }
-
-    @Override
-    public double getHandsLeft() {
-        return handsLeft;
-    }
-
-    @Override
-    public double getNameHeight() {
-        return nameHeight;
     }
 
     @Override
@@ -649,32 +605,8 @@ public final class ConfigManager implements MoonPorterConfig {
     }
 
     @Override
-    public @NotNull String getCommandVisualUpdatedMessage() {
-        return commandVisualUpdatedMessage;
-    }
-
-    @Override
     public @NotNull List<String> getReloadReportMessage() {
         return reloadReportMessage;
-    }
-
-    /**
-     * Живая подстройка визуализации HANDS: применяется к уже несомому
-     * грузу мгновенно, живёт до reload или рестарта.
-     * В файл значения не пишутся: финальные цифры переносятся в config.yml вручную.
-     *
-     * @param forward    смещение вперёд от корпуса
-     * @param height     высота точки удержания над ногами
-     * @param left       смещение влево от игрока
-     * @param nameHeight высота неймтейга над точкой удержания
-     */
-    public void tuneHandsVisual(double forward, double height, double left, double nameHeight) {
-
-        this.handsForward = forward;
-        this.handsHeight = height;
-        this.handsLeft = left;
-        this.nameHeight = nameHeight;
-
     }
 
     @Override

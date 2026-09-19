@@ -15,6 +15,12 @@ public enum TitleType {
     /** Мир игрока не входит в allowed_worlds */
     PICKUP_WRONG_WORLD("pickup.wrong_world"),
 
+    /** В инвентаре нет свободного слота под груз */
+    PICKUP_NO_SPACE("pickup.no_space"),
+
+    /** Груз нельзя выбросить */
+    DROP_DENIED("drop.denied"),
+
     /** Груз успешно сдан */
     DELIVERY_SUCCESS("delivery.success"),
 

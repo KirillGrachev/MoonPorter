@@ -7,8 +7,7 @@ import dev.moonlight.moonporter.config.type.TitleType;
 import dev.moonlight.moonporter.porter.DeliverySession;
 import dev.moonlight.moonporter.porter.DeliveryWatchdog;
 import dev.moonlight.moonporter.porter.cargo.Cargo;
-import dev.moonlight.moonporter.porter.cargo.CargoVisual;
-import dev.moonlight.moonporter.porter.cargo.CargoVisualFactory;
+import dev.moonlight.moonporter.porter.cargo.FallingBlockVisual;
 import dev.moonlight.moonporter.registry.CooldownRegistry;
 import dev.moonlight.moonporter.registry.PorterRegistry;
 import dev.moonlight.moonporter.registry.PorterTierRegistry;
@@ -46,7 +45,7 @@ public final class PorterService {
     private final PorterTierRegistry tierRegistry;
     private final CooldownRegistry cooldownRegistry;
     private final DeliveryWatchdog watchdog;
-    private final CargoVisualFactory cargoVisualFactory;
+    private final CargoItemService cargoItemService;
     private final MessageService messageService;
     private final EconomyService economyService;
     private final RegionProvider regionProvider;
@@ -58,7 +57,7 @@ public final class PorterService {
                          @NotNull PorterTierRegistry tierRegistry,
                          @NotNull CooldownRegistry cooldownRegistry,
                          @NotNull DeliveryWatchdog watchdog,
-                         @NotNull CargoVisualFactory cargoVisualFactory,
+                         @NotNull CargoItemService cargoItemService,
                          @NotNull MessageService messageService,
                          @NotNull EconomyService economyService,
                          @NotNull RegionProvider regionProvider,
@@ -69,7 +68,7 @@ public final class PorterService {
         this.tierRegistry = tierRegistry;
         this.cooldownRegistry = cooldownRegistry;
         this.watchdog = watchdog;
-        this.cargoVisualFactory = cargoVisualFactory;
+        this.cargoItemService = cargoItemService;
         this.messageService = messageService;
         this.economyService = economyService;
         this.regionProvider = regionProvider;
@@ -139,8 +138,26 @@ public final class PorterService {
 
         }
 
-        Cargo cargo = cargoVisualFactory.create(player, tier);
-        CargoVisual visual = cargoVisualFactory.spawn(player, cargo);
+        if (!cargoItemService.hasFreeSlot(player)) {
+
+            messageService.sendTitle(player, TitleType.PICKUP_NO_SPACE);
+            return;
+
+        }
+
+        Cargo cargo = new Cargo(
+                config.getMaterial(),
+                tier,
+                messageService.applyPlaceholders(tier.name(), Map.of(
+                        "player", player.getName(),
+                        "tier", tier.id(),
+                        "weight", tier.weight()
+                )),
+                player.getLocation().clone()
+        );
+
+        cargoItemService.give(player, cargo);
+        FallingBlockVisual visual = FallingBlockVisual.spawn(player, cargo, config.isCargoNameVisible());
 
         attachWeightEffect(player, tier.weight());
 
@@ -193,6 +210,13 @@ public final class PorterService {
 
         }
 
+        if (!cargoItemService.hasCargoItem(player)) {
+
+            cancel(player, CancelReason.CARGO_LOST);
+            return;
+
+        }
+
         int reward = resolveReward(session.cargo());
 
         economyService.deposit(player, reward);
@@ -233,6 +257,7 @@ public final class PorterService {
         lastDenyWarnings.remove(player.getUniqueId());
 
         session.visual().remove();
+        cargoItemService.removeAll(player);
 
         removeWeightEffect(player);
 

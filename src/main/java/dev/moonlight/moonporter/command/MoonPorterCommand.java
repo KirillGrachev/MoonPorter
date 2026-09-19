@@ -26,7 +26,6 @@ public final class MoonPorterCommand implements TabExecutor {
 
     private static final String ARG_RELOAD = "reload";
     private static final String ARG_GIVE = "give";
-    private static final String ARG_VISUAL = "visual";
 
     private final ConfigManager config;
     private final PorterTierRegistry tierRegistry;
@@ -70,8 +69,6 @@ public final class MoonPorterCommand implements TabExecutor {
 
             case ARG_GIVE -> giveCargo(sender, label, args);
 
-            case ARG_VISUAL -> tuneVisual(sender, label, args);
-
             default -> messageService.sendLines(sender, config.getCommandUsageMessage(), usagePlaceholders(label));
 
         }
@@ -92,7 +89,7 @@ public final class MoonPorterCommand implements TabExecutor {
                 return Collections.emptyList();
             }
 
-            return filter(List.of(ARG_RELOAD, ARG_GIVE, ARG_VISUAL), args[0]);
+            return filter(List.of(ARG_RELOAD, ARG_GIVE), args[0]);
 
         }
 
@@ -178,61 +175,6 @@ public final class MoonPorterCommand implements TabExecutor {
 
         return tierRegistry.getTier(args[1]);
 
-    }
-
-    /**
-     * Живая подстройка визуализации HANDS на несомом грузе.
-     * Финальные значения администратор переносит в config.yml вручную.
-     *
-     * @param sender отправитель команды
-     * @param label  имя команды, которым её вызвали
-     * @param args   аргументы: forward height left [name_height]
-     */
-    private void tuneVisual(@NotNull CommandSender sender,
-                            @NotNull String label,
-                            String @NotNull [] args) {
-
-        if (!hasPermission(sender)) {
-            return;
-        }
-
-        if (!(sender instanceof Player)) {
-
-            messageService.sendString(sender, config.getCommandPlayerOnlyMessage());
-            return;
-
-        }
-
-        if (args.length < 4) {
-
-            messageService.sendLines(sender, config.getCommandUsageMessage(), usagePlaceholders(label));
-            return;
-
-        }
-
-        try {
-
-            double forward = Double.parseDouble(args[1]);
-            double height = Double.parseDouble(args[2]);
-            double left = Double.parseDouble(args[3]);
-            double nameHeight = args.length >= 5
-                    ? Double.parseDouble(args[4])
-                    : config.getNameHeight();
-
-            config.tuneHandsVisual(forward, height, left, nameHeight);
-
-            messageService.sendString(sender, config.getCommandVisualUpdatedMessage(), Map.of(
-                    "forward", forward,
-                    "height", height,
-                    "left", left,
-                    "name_height", nameHeight
-            ));
-
-        } catch (NumberFormatException exception) {
-
-            messageService.sendLines(sender, config.getCommandUsageMessage(), usagePlaceholders(label));
-
-        }
     }
 
     /**

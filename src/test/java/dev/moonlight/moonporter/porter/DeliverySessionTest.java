@@ -2,9 +2,8 @@ package dev.moonlight.moonporter.porter;
 
 import dev.moonlight.moonporter.config.PorterTier;
 import dev.moonlight.moonporter.porter.cargo.Cargo;
-import dev.moonlight.moonporter.porter.cargo.CargoVisual;
+import dev.moonlight.moonporter.porter.cargo.FallingBlockVisual;
 import org.bukkit.Material;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -60,30 +59,9 @@ class DeliverySessionTest {
         return new DeliverySession(
                 UUID.randomUUID(),
                 new Cargo(Material.BARREL, TEST_TIER, "Груз", null),
-                new NoOpVisual(),
+                new FallingBlockVisual(null),
                 expiresAt
         );
 
-    }
-
-    /** Визуализация-заглушка: не обращается к миру */
-    private static final class NoOpVisual implements CargoVisual {
-
-        @Override
-        public void attach(@NotNull Player player) {
-        }
-
-        @Override
-        public void remove() {
-        }
-
-        @Override
-        public boolean isAlive() {
-            return false;
-        }
-
-        @Override
-        public void applyName(@NotNull String name, boolean visible) {
-        }
     }
 }

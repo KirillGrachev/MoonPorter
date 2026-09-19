@@ -9,10 +9,10 @@ import dev.moonlight.moonporter.hook.HookRegistrar;
 import dev.moonlight.moonporter.hook.VaultEconomyHook;
 import dev.moonlight.moonporter.listener.PorterStateListener;
 import dev.moonlight.moonporter.porter.DeliveryWatchdog;
-import dev.moonlight.moonporter.porter.cargo.CargoVisualFactory;
 import dev.moonlight.moonporter.registry.CooldownRegistry;
 import dev.moonlight.moonporter.registry.PorterRegistry;
 import dev.moonlight.moonporter.registry.PorterTierRegistry;
+import dev.moonlight.moonporter.service.CargoItemService;
 import dev.moonlight.moonporter.service.CooldownService;
 import dev.moonlight.moonporter.service.EconomyService;
 import dev.moonlight.moonporter.service.MessageService;
@@ -53,7 +53,7 @@ public final class MoonPorter extends JavaPlugin {
         CooldownRegistry cooldownRegistry = new CooldownRegistry();
         PermissionService permissionService = new PermissionService(configManager);
         CooldownService cooldownService = new CooldownService(configManager, permissionService);
-        CargoVisualFactory cargoVisualFactory = new CargoVisualFactory(this, configManager, messageService);
+        CargoItemService cargoItemService = new CargoItemService(this);
 
         // Watchdog и HookRegistrar создаются до PorterService,
         // потому что сами нужны ему в конструкторе. Обратная ссылка
@@ -69,7 +69,7 @@ public final class MoonPorter extends JavaPlugin {
                 tierRegistry,
                 cooldownRegistry,
                 deliveryWatchdog,
-                cargoVisualFactory,
+                cargoItemService,
                 messageService,
                 economyService,
                 regionProvider,
@@ -84,7 +84,7 @@ public final class MoonPorter extends JavaPlugin {
 
         // Регистрация слушателей
         new EventDispatcher(this).registerEvents(
-                new PorterStateListener(configManager, porterService)
+                new PorterStateListener(configManager, porterService, messageService, cargoItemService)
         );
 
         // Регистрация команд

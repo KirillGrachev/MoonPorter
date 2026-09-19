@@ -4,14 +4,7 @@ settings:
   enabled: true # Full on/off switch of the plugin
   material: BARREL # Cargo block material shown above the player
   cargo:
-    visual: HEAD # HEAD — cargo rides above the head (any core 1.16+).
-    # HANDS — block display held in front of the player (core 1.19.4+, falls back to HEAD)
-    name_visible: true # Show the cargo name above the entity
-    hands_offset: # Tuning of the HANDS visual, applied live every tick
-      forward: 0.50 # Distance in front of the chest (in blocks)
-      height: 1.15 # Hold point height above the player's feet (in blocks)
-      left: 0.0 # Shift to the player's left (in blocks), negative — to the right
-    name_height: 0.75 # Nametag height above the hold point (in blocks)
+    name_visible: true # Show the cargo name above the entity riding the player
   violations:
     reset_flight: true # Turn flight off on violation; false — only take the cargo away
     reset_gamemode: true # Force survival on violation; false — only take the cargo away
@@ -72,6 +65,16 @@ messages:
       enabled: true
       title: "&cError!"
       subtitle: "&fCargo is unavailable in this world"
+    no_space:
+      enabled: true
+      title: "&cError!"
+      subtitle: "&fNo free slot for the cargo"
+
+  drop:
+    denied:
+      enabled: true
+      title: "&cError!"
+      subtitle: "&fYou cannot drop the cargo"
 
   delivery:
     success:
@@ -116,7 +119,6 @@ messages:
     no_permission: "{prefix}&cYou don't have permission for this command."
     player_only: "{prefix}&cThis command is available to players only."
     no_tiers: "{prefix}&cNo cargo levels are configured."
-    visual_updated: "{prefix}&aVisual tuned: forward {forward}, height {height}, left {left}, name {name_height}. Save these values into config.yml to keep them."
     reload_success: "{prefix}&aConfiguration reloaded. Cancelled deliveries: &e{count}"
     reload_report:
       - ""
@@ -134,7 +136,6 @@ messages:
       - ""
       - " {prefix}&e/{label} reload &7— reload the configuration"
       - " &e/{label} give [tier] &7— hand out cargo"
-      - " &e/{label} visual <forward> <height> <left> [name_height] &7— tune HANDS visual live"
       - " &7Tiers: &f{tiers}"
       - " &7Delivery regions: &f{regions}"
       - ""

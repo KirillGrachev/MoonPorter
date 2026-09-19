@@ -1,6 +1,5 @@
 package dev.moonlight.moonporter.config;
 
-import dev.moonlight.moonporter.config.type.CargoVisualType;
 import dev.moonlight.moonporter.config.type.DeliveryTrigger;
 import dev.moonlight.moonporter.config.type.TitleType;
 import org.bukkit.Material;
@@ -22,27 +21,7 @@ public interface MoonPorterConfig {
 
     /* Груз */
 
-    @NotNull CargoVisualType getCargoVisualType();
-
     boolean isCargoNameVisible();
-
-    double getHandsForward();
-
-    double getHandsHeight();
-
-    /**
-     * Смещение точки удержания влево от игрока (в блоках).
-     *
-     * @return смещение влево, отрицательное — вправо
-     */
-    double getHandsLeft();
-
-    /**
-     * Высота неймтейга над точкой удержания (в блоках).
-     *
-     * @return высота над грузом
-     */
-    double getNameHeight();
 
     /* Нарушения */
 
@@ -128,8 +107,6 @@ public interface MoonPorterConfig {
     @NotNull String getReloadSuccessMessage();
 
     @NotNull String getCommandNoTiersMessage();
-
-    @NotNull String getCommandVisualUpdatedMessage();
 
     @NotNull List<String> getReloadReportMessage();
 

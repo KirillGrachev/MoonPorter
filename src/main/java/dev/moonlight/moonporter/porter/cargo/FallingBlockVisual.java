@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Груз на основе сущности FallingBlock, едущей верхом на игроке.
+ * Груз над головой: падающий блок верхом на игроке.
  *
  * Все настройки подобраны так, чтобы сущность не создавала нагрузки:
  * нет гравитации, нет физики падения, нет урона, нет частиц,
@@ -18,7 +18,7 @@ import org.jetbrains.annotations.Nullable;
  * minecraft:marker), поэтому здесь он не применяется: падающий блок
  * и без того не сталкивается с игроками и не нажимает плиты.
  */
-public final class FallingBlockVisual implements CargoVisual {
+public final class FallingBlockVisual {
 
     private final @Nullable FallingBlock fallingBlock;
 
@@ -26,7 +26,37 @@ public final class FallingBlockVisual implements CargoVisual {
         this.fallingBlock = fallingBlock;
     }
 
-    @Override
+    /**
+     * Спавнит визуализацию груза и прикрепляет её к игроку.
+     *
+     * @param player      несущий игрок
+     * @param cargo       описание груза
+     * @param nameVisible показывать ли имя груза над блоком
+     * @return прикреплённая визуализация
+     */
+    public static @NotNull FallingBlockVisual spawn(@NotNull Player player,
+                                                    @NotNull Cargo cargo,
+                                                    boolean nameVisible) {
+
+        FallingBlock fallingBlock = player.getWorld().spawnFallingBlock(
+                player.getLocation(),
+                cargo.material().createBlockData()
+        );
+
+        FallingBlockVisual visual = new FallingBlockVisual(fallingBlock);
+
+        visual.applyName(cargo.displayName(), nameVisible);
+        visual.attach(player);
+
+        return visual;
+
+    }
+
+    /**
+     * Прикрепляет визуализацию к игроку.
+     *
+     * @param player несущий игрок
+     */
     public void attach(@NotNull Player player) {
 
         if (fallingBlock == null) {
@@ -48,7 +78,27 @@ public final class FallingBlockVisual implements CargoVisual {
 
     }
 
-    @Override
+    /**
+     * Применяет имя груза к визуализации.
+     *
+     * @param name    окрашенное имя с подставленными плейсхолдерами
+     * @param visible показывать ли неймтейг
+     */
+    public void applyName(@NotNull String name, boolean visible) {
+
+        if (fallingBlock == null) {
+            return;
+        }
+
+        fallingBlock.setCustomName(name);
+        fallingBlock.setCustomNameVisible(visible);
+
+    }
+
+    /**
+     * Удаляет визуализацию из мира.
+     * Вызов идемпотентен.
+     */
     public void remove() {
 
         if (fallingBlock == null || !fallingBlock.isValid()) {
@@ -59,20 +109,12 @@ public final class FallingBlockVisual implements CargoVisual {
 
     }
 
-    @Override
+    /**
+     * Жива ли ещё сущность визуализации.
+     *
+     * @return true если сущность существует в мире
+     */
     public boolean isAlive() {
         return fallingBlock != null && fallingBlock.isValid();
-    }
-
-    @Override
-    public void applyName(@NotNull String name, boolean visible) {
-
-        if (fallingBlock == null) {
-            return;
-        }
-
-        fallingBlock.setCustomName(name);
-        fallingBlock.setCustomNameVisible(visible);
-
     }
 }

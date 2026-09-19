@@ -1,6 +1,5 @@
 package dev.moonlight.moonporter.config;
 
-import dev.moonlight.moonporter.config.type.CargoVisualType;
 import dev.moonlight.moonporter.config.type.DeliveryTrigger;
 import dev.moonlight.moonporter.config.type.TitleType;
 import org.bukkit.Material;
@@ -135,12 +134,7 @@ class ConfigManagerTest {
         assertTrue(config.isEnabled());
         assertEquals(Material.BARREL, config.getMaterial());
 
-        assertEquals(CargoVisualType.HEAD, config.getCargoVisualType());
         assertTrue(config.isCargoNameVisible());
-        assertEquals(0.50D, config.getHandsForward());
-        assertEquals(1.15D, config.getHandsHeight());
-        assertEquals(0.0D, config.getHandsLeft());
-        assertEquals(0.75D, config.getNameHeight());
         assertTrue(config.isResetFlightEnabled());
         assertTrue(config.isResetGamemodeEnabled());
 
