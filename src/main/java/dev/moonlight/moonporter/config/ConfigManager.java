@@ -308,9 +308,11 @@ public final class ConfigManager implements MoonPorterConfig {
 
             ConfigurationSection section = config.getConfigurationSection("messages." + type.getPath());
 
+            // Отсутствующая секция не должна делать отказ молчаливым:
+            // подставляется встроенный английский текст.
             if (section == null) {
 
-                titles.put(type, TitleMessage.empty());
+                titles.put(type, defaultTitle(type));
                 continue;
 
             }
@@ -322,6 +324,42 @@ public final class ConfigManager implements MoonPorterConfig {
             ));
 
         }
+    }
+
+    /**
+     * Встроенное значение титула на случай отсутствующей секции конфига.
+     *
+     * @param title      основной текст
+     * @param subtitle   текст подзаголовка
+     * @return включённый титул с окрашенными строками
+     */
+    private @NotNull TitleMessage title(@NotNull String title, @NotNull String subtitle) {
+        return new TitleMessage(true, HexColorUtil.color(title), HexColorUtil.color(subtitle));
+    }
+
+    /**
+     * Английские титулы по умолчанию для каждого типа.
+     *
+     * @param type тип титула
+     * @return титул по умолчанию
+     */
+    private @NotNull TitleMessage defaultTitle(@NotNull TitleType type) {
+
+        return switch (type) {
+
+            case PICKUP_SUCCESS -> title("&a✔", "&fYou took the cargo");
+            case PICKUP_DENIED -> title("&cError!", "&fYou are already carrying cargo");
+            case PICKUP_WRONG_WORLD -> title("&cError!", "&fCargo is unavailable in this world");
+            case DELIVERY_SUCCESS -> title("&aGood job!", "&fYou received &e{amount}");
+            case DELIVERY_WRONG_WORLD -> title("&cError!", "&fCargo cannot be delivered in this world");
+            case DELIVERY_WRONG_POINT -> title("&cError!", "&fDeliver the cargo to the configured region");
+            case FLIGHT -> title("&cError!", "&fDisable flight");
+            case GAMEMODE -> title("&cError!", "&fSurvival mode only");
+            case TIMEOUT -> title("&cError!", "&fYou did not deliver the cargo in time");
+            case COOLDOWN -> title("&c⌛ Cooldown", "&fWait &e{seconds} more sec.");
+            case NO_PERMISSION -> title("&cError!", "&fNot enough permissions");
+
+        };
     }
 
     private <T extends Enum<T>> @NotNull T readEnum(@NotNull String path,

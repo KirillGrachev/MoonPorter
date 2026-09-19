@@ -24,7 +24,7 @@ settings:
     ids: # Citizens NPC ids that hand out cargo
       - 45
   allowed_worlds: # Worlds where carrying is active
-    - "lobby"
+    - "world"
   allowed_regions: # WorldGuard regions where delivery is allowed
     - "porter" # Empty list — deliver anywhere in an allowed world
   porters:
@@ -42,7 +42,7 @@ settings:
       weight: 3
 
 messages:
-  prefix: "#42fffc&lMoon&f&lPorter &7» &f"
+  prefix: "&b&lM&9&lL &7» &f"
   reward_format: "{amount}$" # Format of the payout sum inside delivery.success
 
   pickup:
@@ -54,12 +54,24 @@ messages:
       enabled: true
       title: "&cError!"
       subtitle: "&fYou are already carrying cargo"
+    wrong_world:
+      enabled: true
+      title: "&cError!"
+      subtitle: "&fCargo is unavailable in this world"
 
   delivery:
     success:
       enabled: true
       title: "&aGood job!"
       subtitle: "&fYou received &e{amount}"
+    wrong_world:
+      enabled: true
+      title: "&cError!"
+      subtitle: "&fCargo cannot be delivered in this world"
+    wrong_point:
+      enabled: true
+      title: "&cError!"
+      subtitle: "&fDeliver the cargo to the configured region"
 
   flight:
     enabled: true

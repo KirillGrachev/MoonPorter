@@ -107,8 +107,12 @@ class ConfigManagerTest {
         // enabled: false отключает титул целиком
         assertTrue(config.getTitle(TitleType.PICKUP_DENIED).isDisabled());
 
-        // отсутствующая секция — пустой титул
-        assertTrue(config.getTitle(TitleType.FLIGHT).isDisabled());
+        // отсутствующая секция даёт встроенный дефолт: отказ не молчит
+        TitleMessage flight = config.getTitle(TitleType.FLIGHT);
+
+        assertTrue(flight.enabled());
+        assertEquals("§cError!", flight.title());
+        assertEquals("§fDisable flight", flight.subtitle());
 
     }
 

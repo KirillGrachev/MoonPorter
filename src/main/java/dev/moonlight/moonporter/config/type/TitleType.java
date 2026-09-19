@@ -12,8 +12,17 @@ public enum TitleType {
     /** Игрок уже несёт груз */
     PICKUP_DENIED("pickup.denied"),
 
+    /** Мир игрока не входит в allowed_worlds */
+    PICKUP_WRONG_WORLD("pickup.wrong_world"),
+
     /** Груз успешно сдан */
     DELIVERY_SUCCESS("delivery.success"),
+
+    /** Сдача в мире не из allowed_worlds */
+    DELIVERY_WRONG_WORLD("delivery.wrong_world"),
+
+    /** Точка сдачи вне региона или радиуса */
+    DELIVERY_WRONG_POINT("delivery.wrong_point"),
 
     /** Игрок включил полёт */
     FLIGHT("flight"),

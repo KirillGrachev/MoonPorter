@@ -23,6 +23,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Основная логика переноски груза: выдача, сдача и отмена.
@@ -34,6 +35,11 @@ public final class PorterService {
 
     /** Длительность эффекта замедления: снимается при сдаче или отмене груза */
     private static final int EFFECT_DURATION_TICKS = Integer.MAX_VALUE;
+
+    /** Минимальный интервал между титулами отказа в сдаче, миллисекунды */
+    private static final long DENY_WARN_INTERVAL_MILLIS = 3000L;
+
+    private final Map<UUID, Long> lastDenyWarnings = new ConcurrentHashMap<>();
 
     private final MoonPorterConfig config;
     private final PorterRegistry porterRegistry;
@@ -90,7 +96,10 @@ public final class PorterService {
         }
 
         if (!isAllowedWorld(player)) {
+
+            messageService.sendTitle(player, TitleType.PICKUP_WRONG_WORLD);
             return;
+
         }
 
         if (porterRegistry.isCarrying(player)) {
@@ -159,8 +168,18 @@ public final class PorterService {
             return;
         }
 
-        if (!isAllowedWorld(player) || !isAllowedDeliveryPoint(player, session.cargo())) {
+        if (!isAllowedWorld(player)) {
+
+            denyDelivery(player, TitleType.DELIVERY_WRONG_WORLD);
             return;
+
+        }
+
+        if (!isAllowedDeliveryPoint(player, session.cargo())) {
+
+            denyDelivery(player, TitleType.DELIVERY_WRONG_POINT);
+            return;
+
         }
 
         int reward = resolveReward(session.cargo());
@@ -200,6 +219,8 @@ public final class PorterService {
             return;
         }
 
+        lastDenyWarnings.remove(player.getUniqueId());
+
         session.visual().remove();
 
         removeWeightEffect(player);
@@ -234,6 +255,7 @@ public final class PorterService {
 
         porterRegistry.clear();
         cooldownRegistry.clear();
+        lastDenyWarnings.clear();
 
         return sessions.size();
 
@@ -347,5 +369,26 @@ public final class PorterService {
      */
     private boolean canUse(@NotNull Player player) {
         return !config.arePermissionsEnabled() || player.hasPermission(config.getPermissionUse());
+    }
+
+    /**
+     * Отправляет титул отказа в сдаче, не чаще раза в несколько секунд:
+     * при SNEAK_HOLD событие приходит на каждый переход между блоками.
+     *
+     * @param player игрок
+     * @param type   тип титула отказа
+     */
+    private void denyDelivery(@NotNull Player player, @NotNull TitleType type) {
+
+        long now = System.currentTimeMillis();
+        Long last = lastDenyWarnings.get(player.getUniqueId());
+
+        if (last != null && now - last < DENY_WARN_INTERVAL_MILLIS) {
+            return;
+        }
+
+        lastDenyWarnings.put(player.getUniqueId(), now);
+        messageService.sendTitle(player, type);
+
     }
 }
