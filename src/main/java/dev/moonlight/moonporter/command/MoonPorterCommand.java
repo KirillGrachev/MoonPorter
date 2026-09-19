@@ -1,6 +1,6 @@
 package dev.moonlight.moonporter.command;
 
-import dev.moonlight.moonporter.config.MoonPorterConfig;
+import dev.moonlight.moonporter.config.ConfigManager;
 import dev.moonlight.moonporter.config.PorterTier;
 import dev.moonlight.moonporter.registry.PorterTierRegistry;
 import dev.moonlight.moonporter.service.MessageService;
@@ -26,15 +26,16 @@ public final class MoonPorterCommand implements TabExecutor {
 
     private static final String ARG_RELOAD = "reload";
     private static final String ARG_GIVE = "give";
+    private static final String ARG_VISUAL = "visual";
 
-    private final MoonPorterConfig config;
+    private final ConfigManager config;
     private final PorterTierRegistry tierRegistry;
     private final MessageService messageService;
     private final PorterService porterService;
     private final ReloadService reloadService;
     private final PermissionService permissionService;
 
-    public MoonPorterCommand(@NotNull MoonPorterConfig config,
+    public MoonPorterCommand(@NotNull ConfigManager config,
                              @NotNull PorterTierRegistry tierRegistry,
                              @NotNull MessageService messageService,
                              @NotNull PorterService porterService,
@@ -69,6 +70,8 @@ public final class MoonPorterCommand implements TabExecutor {
 
             case ARG_GIVE -> giveCargo(sender, label, args);
 
+            case ARG_VISUAL -> tuneVisual(sender, args);
+
             default -> messageService.sendLines(sender, config.getCommandUsageMessage(), usagePlaceholders(label));
 
         }
@@ -89,7 +92,7 @@ public final class MoonPorterCommand implements TabExecutor {
                 return Collections.emptyList();
             }
 
-            return filter(List.of(ARG_RELOAD, ARG_GIVE), args[0]);
+            return filter(List.of(ARG_RELOAD, ARG_GIVE, ARG_VISUAL), args[0]);
 
         }
 
@@ -175,6 +178,58 @@ public final class MoonPorterCommand implements TabExecutor {
 
         return tierRegistry.getTier(args[1]);
 
+    }
+
+    /**
+     * Живая подстройка визуализации HANDS на несомом грузе.
+     * Финальные значения администратор переносит в config.yml вручную.
+     *
+     * @param sender отправитель команды
+     * @param args   аргументы: forward height left [name_height]
+     */
+    private void tuneVisual(@NotNull CommandSender sender, String @NotNull [] args) {
+
+        if (!hasPermission(sender)) {
+            return;
+        }
+
+        if (!(sender instanceof Player)) {
+
+            messageService.sendString(sender, config.getCommandPlayerOnlyMessage());
+            return;
+
+        }
+
+        if (args.length < 4) {
+
+            messageService.sendString(sender, config.getCommandUsageMessage());
+            return;
+
+        }
+
+        try {
+
+            double forward = Double.parseDouble(args[1]);
+            double height = Double.parseDouble(args[2]);
+            double left = Double.parseDouble(args[3]);
+            double nameHeight = args.length >= 5
+                    ? Double.parseDouble(args[4])
+                    : config.getNameHeight();
+
+            config.tuneHandsVisual(forward, height, left, nameHeight);
+
+            messageService.sendString(sender, config.getCommandVisualUpdatedMessage(), Map.of(
+                    "forward", forward,
+                    "height", height,
+                    "left", left,
+                    "name_height", nameHeight
+            ));
+
+        } catch (NumberFormatException exception) {
+
+            messageService.sendString(sender, config.getCommandUsageMessage());
+
+        }
     }
 
     /**

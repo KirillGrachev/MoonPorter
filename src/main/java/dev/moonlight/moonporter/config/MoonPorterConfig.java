@@ -129,6 +129,8 @@ public interface MoonPorterConfig {
 
     @NotNull String getCommandNoTiersMessage();
 
+    @NotNull String getCommandVisualUpdatedMessage();
+
     @NotNull List<String> getReloadReportMessage();
 
     /** Управление */

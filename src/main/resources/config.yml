@@ -116,6 +116,7 @@ messages:
     no_permission: "{prefix}&cYou don't have permission for this command."
     player_only: "{prefix}&cThis command is available to players only."
     no_tiers: "{prefix}&cNo cargo levels are configured."
+    visual_updated: "{prefix}&aVisual tuned: forward {forward}, height {height}, left {left}, name {name_height}. Save these values into config.yml to keep them."
     reload_success: "{prefix}&aConfiguration reloaded. Cancelled deliveries: &e{count}"
     reload_report:
       - ""
@@ -133,6 +134,7 @@ messages:
       - ""
       - " {prefix}&e/{label} reload &7— reload the configuration"
       - " &e/{label} give [tier] &7— hand out cargo"
+      - " &e/{label} visual <forward> <height> <left> [name_height] &7— tune HANDS visual live"
       - " &7Tiers: &f{tiers}"
       - " &7Delivery regions: &f{regions}"
       - ""

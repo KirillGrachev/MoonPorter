@@ -71,6 +71,7 @@ public final class ConfigManager implements MoonPorterConfig {
     private static final String PATH_COMMAND_USAGE = "messages.command.usage";
     private static final String PATH_RELOAD_SUCCESS = "messages.command.reload_success";
     private static final String PATH_COMMAND_NO_TIERS = "messages.command.no_tiers";
+    private static final String PATH_COMMAND_VISUAL_UPDATED = "messages.command.visual_updated";
     private static final String PATH_RELOAD_REPORT = "messages.command.reload_report";
 
     private boolean enabled;
@@ -109,6 +110,7 @@ public final class ConfigManager implements MoonPorterConfig {
     private List<String> commandUsageMessage;
     private String reloadSuccessMessage;
     private String commandNoTiersMessage;
+    private String commandVisualUpdatedMessage;
     private List<String> reloadReportMessage;
 
     private final Map<TitleType, TitleMessage> titles = new EnumMap<>(TitleType.class);
@@ -209,6 +211,7 @@ public final class ConfigManager implements MoonPorterConfig {
         commandUsageMessage = readColoredList(PATH_COMMAND_USAGE);
         reloadSuccessMessage = readMessageString(PATH_RELOAD_SUCCESS);
         commandNoTiersMessage = readMessageString(PATH_COMMAND_NO_TIERS);
+        commandVisualUpdatedMessage = readMessageString(PATH_COMMAND_VISUAL_UPDATED);
         reloadReportMessage = readColoredList(PATH_RELOAD_REPORT);
 
         if (reloadReportMessage.isEmpty()) {
@@ -646,8 +649,32 @@ public final class ConfigManager implements MoonPorterConfig {
     }
 
     @Override
+    public @NotNull String getCommandVisualUpdatedMessage() {
+        return commandVisualUpdatedMessage;
+    }
+
+    @Override
     public @NotNull List<String> getReloadReportMessage() {
         return reloadReportMessage;
+    }
+
+    /**
+     * Живая подстройка визуализации HANDS: применяется к уже несомому
+     * грузу мгновенно, живёт до reload или рестарта.
+     * В файл значения не пишутся: финальные цифры переносятся в config.yml вручную.
+     *
+     * @param forward    смещение вперёд от корпуса
+     * @param height     высота точки удержания над ногами
+     * @param left       смещение влево от игрока
+     * @param nameHeight высота неймтейга над точкой удержания
+     */
+    public void tuneHandsVisual(double forward, double height, double left, double nameHeight) {
+
+        this.handsForward = forward;
+        this.handsHeight = height;
+        this.handsLeft = left;
+        this.nameHeight = nameHeight;
+
     }
 
     @Override
