@@ -108,7 +108,8 @@ public final class MoonPorter extends JavaPlugin {
 
         }
 
-        getLogger().info("Регионы: " + regionProvider.getName()
+        getLogger().info("Регионы: " + configManager.getAllowedRegions()
+                + " (провайдер: " + regionProvider.getName() + ")"
                 + ", NPC: " + configManager.getNpcIds());
 
         getLogger().info("MoonPorter успешно запущен!");
