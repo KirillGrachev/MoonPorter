@@ -6,6 +6,7 @@ import dev.moonlight.moonporter.config.ConfigManager;
 import dev.moonlight.moonporter.config.type.CancelReason;
 import dev.moonlight.moonporter.event.EventDispatcher;
 import dev.moonlight.moonporter.hook.HookRegistrar;
+import dev.moonlight.moonporter.hook.VaultEconomyHook;
 import dev.moonlight.moonporter.listener.PorterStateListener;
 import dev.moonlight.moonporter.porter.DeliveryWatchdog;
 import dev.moonlight.moonporter.porter.cargo.CargoVisualFactory;
@@ -18,12 +19,12 @@ import dev.moonlight.moonporter.service.MessageService;
 import dev.moonlight.moonporter.service.PorterService;
 import dev.moonlight.moonporter.service.RegionProvider;
 import dev.moonlight.moonporter.service.ReloadService;
-import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.RegisteredServiceProvider;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Точка входа плагина.
@@ -44,7 +45,7 @@ public final class MoonPorter extends JavaPlugin {
         this.configManager = new ConfigManager(this);
 
         MessageService messageService = new MessageService(configManager);
-        EconomyService economyService = new EconomyService(resolveEconomy());
+        EconomyService economyService = new EconomyService(attachEconomy());
 
         PorterRegistry porterRegistry = new PorterRegistry();
         PorterTierRegistry tierRegistry = new PorterTierRegistry(configManager);
@@ -108,15 +109,23 @@ public final class MoonPorter extends JavaPlugin {
     @Override
     public void onDisable() {
 
-        // Итерация по онлайн-игрокам вместо Bukkit.getOfflinePlayers():
-        // снимок не содержит тысяч записей и не вызывает return из цикла.
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            porterService.cancel(player, CancelReason.SHUTDOWN);
+        // onEnable мог упасть до создания сервисов: onDisable обязан быть null-safe,
+        // иначе ошибка включения превращается во вторую ошибку при выключении.
+        if (porterService != null) {
+
+            // Итерация по онлайн-игрокам вместо Bukkit.getOfflinePlayers():
+            // снимок не содержит тысяч записей и не вызывает return из цикла.
+            for (Player player : Bukkit.getOnlinePlayers()) {
+                porterService.cancel(player, CancelReason.SHUTDOWN);
+            }
+
+            porterService.cancelAll();
+
         }
 
-        porterService.cancelAll();
-
-        deliveryWatchdog.shutdown();
+        if (deliveryWatchdog != null) {
+            deliveryWatchdog.shutdown();
+        }
 
         getServer().getScheduler().cancelTasks(this);
 
@@ -125,18 +134,32 @@ public final class MoonPorter extends JavaPlugin {
     }
 
     /**
-     * Ищет провайдер экономики Vault.
-     * Отсутствие Vault не является ошибкой — плагин продолжает работать.
+     * Подключает экономику Vault, если плагин установлен.
      *
-     * @return провайдер экономики либо null
+     * Проверка наличия выполняется ДО обращения к классу интеграции:
+     * без этого отсутствующий в classpath Vault дал бы
+     * NoClassDefFoundError на первом же вызове.
+     *
+     * @return хук экономики либо null, если Vault или провайдер отсутствуют
      */
-    private Economy resolveEconomy() {
+    private @Nullable VaultEconomyHook attachEconomy() {
 
-        RegisteredServiceProvider<Economy> registration =
-                getServer().getServicesManager().getRegistration(Economy.class);
+        Plugin vault = getServer().getPluginManager().getPlugin("Vault");
 
-        return registration == null ? null : registration.getProvider();
+        if (vault == null || !vault.isEnabled()) {
+            return null;
+        }
 
+        try {
+
+            return VaultEconomyHook.attach(this);
+
+        } catch (Throwable throwable) {
+
+            getLogger().warning("Не удалось подключить Vault: " + throwable.getMessage());
+            return null;
+
+        }
     }
 
     public @NotNull ConfigManager getConfigManager() {

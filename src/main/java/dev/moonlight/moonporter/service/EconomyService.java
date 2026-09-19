@@ -1,7 +1,6 @@
 package dev.moonlight.moonporter.service;
 
-import net.milkbowl.vault.economy.Economy;
-import net.milkbowl.vault.economy.EconomyResponse;
+import dev.moonlight.moonporter.hook.VaultEconomyHook;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -9,15 +8,16 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Обёртка над экономикой Vault.
  *
- * Плагин не падает без Vault: при отсутствии провайдера
- * выдача награды просто отключается, а перевозка продолжает работать.
+ * Сама не импортирует типы Vault: работает через VaultEconomyHook,
+ * который создаётся только при установленном Vault. Без хука
+ * плагин продолжает работать, награда просто не начисляется.
  */
 public final class EconomyService {
 
-    private final @Nullable Economy economy;
+    private final @Nullable VaultEconomyHook hook;
 
-    public EconomyService(@Nullable Economy economy) {
-        this.economy = economy;
+    public EconomyService(@Nullable VaultEconomyHook hook) {
+        this.hook = hook;
     }
 
     /**
@@ -26,7 +26,7 @@ public final class EconomyService {
      * @return true если провайдер Vault доступен
      */
     public boolean isAvailable() {
-        return economy != null;
+        return hook != null;
     }
 
     /**
@@ -37,14 +37,6 @@ public final class EconomyService {
      * @return true если начисление прошло успешно
      */
     public boolean deposit(@NotNull Player player, int amount) {
-
-        if (economy == null || amount <= 0) {
-            return false;
-        }
-
-        EconomyResponse response = economy.depositPlayer(player, amount);
-
-        return response != null && response.transactionSuccess();
-
+        return hook != null && hook.deposit(player, amount);
     }
 }
