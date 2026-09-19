@@ -19,7 +19,8 @@ settings:
     stay: 40 # Title display time (in ticks)
     fade_out: 20 # Title fade-out time (in ticks)
   delivery:
-    trigger: SNEAK_TOGGLE # SNEAK_TOGGLE — deliver on Shift press
+    trigger: SNEAK_TOGGLE # SNEAK_TOGGLE — deliver on Shift press.
+    # SNEAK_HOLD — deliver while Shift is held (checked on block change)
     timeout: 15 # Delivery time limit (in seconds)
     radius: 0.0 # Delivery radius from the pickup point (in blocks), 0 — no check
   cooldown:
@@ -27,6 +28,7 @@ settings:
     time: 30 # Cooldown duration (in seconds)
   permissions:
     enabled: false # Enable permission system (admin, use, bypass_cooldown)
+    op_bypass: false # OP players and console ignore permission checks (use, bypass_cooldown, admin)
     admin: "moonporter.admin"
     use: "moonporter.use"
     bypass_cooldown: "moonporter.bypass.cooldown"

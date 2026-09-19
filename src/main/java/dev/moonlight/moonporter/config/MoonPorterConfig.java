@@ -69,6 +69,13 @@ public interface MoonPorterConfig {
     /** Права */
     boolean arePermissionsEnabled();
 
+    /**
+     * Освобождают ли OP-игроки и консоль от проверок прав.
+     *
+     * @return true если op_bypass включён
+     */
+    boolean isOpBypassEnabled();
+
     @NotNull String getPermissionAdmin();
 
     @NotNull String getPermissionUse();

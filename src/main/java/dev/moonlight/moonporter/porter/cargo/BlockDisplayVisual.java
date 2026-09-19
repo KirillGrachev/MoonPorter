@@ -96,6 +96,9 @@ public final class BlockDisplayVisual implements CargoVisual {
      * Ставит груз по центру перед корпусом носителя.
      * Горизонталь — по yaw тела, высота — фиксировано над ногами:
      * модель обхвата двумя руками, независимая от направления взгляда.
+     *
+     * Знаки компонентов соответствуют конвенции Bukkit:
+     * forward = (-sin(yaw), +cos(yaw)), yaw 0 смотрит в +Z.
      */
     private void follow() {
 
@@ -107,7 +110,7 @@ public final class BlockDisplayVisual implements CargoVisual {
         double yaw = Math.toRadians(hands.getYaw());
 
         hands.setX(hands.getX() - Math.sin(yaw) * forward);
-        hands.setZ(hands.getZ() - Math.cos(yaw) * forward);
+        hands.setZ(hands.getZ() + Math.cos(yaw) * forward);
         hands.setY(hands.getY() + height);
 
         display.teleport(hands);

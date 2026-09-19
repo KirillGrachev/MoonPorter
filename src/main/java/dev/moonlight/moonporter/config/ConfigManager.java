@@ -54,6 +54,7 @@ public final class ConfigManager implements MoonPorterConfig {
     private static final String PATH_COOLDOWN_ENABLED = "settings.cooldown.enabled";
     private static final String PATH_COOLDOWN_TIME = "settings.cooldown.time";
     private static final String PATH_PERMISSIONS_ENABLED = "settings.permissions.enabled";
+    private static final String PATH_PERMISSION_OP_BYPASS = "settings.permissions.op_bypass";
     private static final String PATH_PERMISSION_ADMIN = "settings.permissions.admin";
     private static final String PATH_PERMISSION_USE = "settings.permissions.use";
     private static final String PATH_PERMISSION_BYPASS_COOLDOWN = "settings.permissions.bypass_cooldown";
@@ -88,6 +89,7 @@ public final class ConfigManager implements MoonPorterConfig {
     private boolean cooldownEnabled;
     private long cooldownMillis;
     private boolean permissionsEnabled;
+    private boolean opBypass;
     private String permissionAdmin;
     private String permissionUse;
     private String permissionBypassCooldown;
@@ -183,6 +185,7 @@ public final class ConfigManager implements MoonPorterConfig {
         cooldownMillis = Math.max(0, config.getInt(PATH_COOLDOWN_TIME, 30)) * 1000L;
 
         permissionsEnabled = config.getBoolean(PATH_PERMISSIONS_ENABLED, false);
+        opBypass = config.getBoolean(PATH_PERMISSION_OP_BYPASS, false);
         permissionAdmin = config.getString(PATH_PERMISSION_ADMIN, "moonporter.admin");
         permissionUse = config.getString(PATH_PERMISSION_USE, "moonporter.use");
         permissionBypassCooldown = config.getString(PATH_PERMISSION_BYPASS_COOLDOWN, "moonporter.bypass.cooldown");
@@ -547,6 +550,11 @@ public final class ConfigManager implements MoonPorterConfig {
     }
 
     @Override
+    public boolean isOpBypassEnabled() {
+        return opBypass;
+    }
+
+    @Override
     public @NotNull String getPermissionAdmin() {
         return permissionAdmin;
     }
@@ -653,7 +661,8 @@ public final class ConfigManager implements MoonPorterConfig {
                 .collect(Collectors.joining(", ")));
         values.put("delivery", deliveryTrigger.name() + ", timeout " + deliveryTimeoutMillis / 1000L + "s");
         values.put("cooldown", cooldownEnabled ? cooldownMillis / 1000L + "s" : "off");
-        values.put("permissions", permissionsEnabled ? "on" : "off");
+        values.put("permissions", (permissionsEnabled ? "on" : "off")
+                + ", op_bypass " + (opBypass ? "on" : "off"));
 
         return Collections.unmodifiableMap(values);
 

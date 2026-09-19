@@ -11,9 +11,12 @@ import org.jetbrains.annotations.NotNull;
 public final class CooldownService {
 
     private final MoonPorterConfig config;
+    private final PermissionService permissionService;
 
-    public CooldownService(@NotNull MoonPorterConfig config) {
+    public CooldownService(@NotNull MoonPorterConfig config,
+                           @NotNull PermissionService permissionService) {
         this.config = config;
+        this.permissionService = permissionService;
     }
 
     /**
@@ -28,11 +31,7 @@ public final class CooldownService {
             return true;
         }
 
-        if (!config.arePermissionsEnabled()) {
-            return false;
-        }
-
-        return player.hasPermission(config.getPermissionBypassCooldown());
+        return permissionService.hasCooldownBypass(player);
 
     }
 }

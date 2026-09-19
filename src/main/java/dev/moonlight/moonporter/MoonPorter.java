@@ -16,6 +16,7 @@ import dev.moonlight.moonporter.registry.PorterTierRegistry;
 import dev.moonlight.moonporter.service.CooldownService;
 import dev.moonlight.moonporter.service.EconomyService;
 import dev.moonlight.moonporter.service.MessageService;
+import dev.moonlight.moonporter.service.PermissionService;
 import dev.moonlight.moonporter.service.PorterService;
 import dev.moonlight.moonporter.service.RegionProvider;
 import dev.moonlight.moonporter.service.ReloadService;
@@ -50,7 +51,8 @@ public final class MoonPorter extends JavaPlugin {
         PorterRegistry porterRegistry = new PorterRegistry();
         PorterTierRegistry tierRegistry = new PorterTierRegistry(configManager);
         CooldownRegistry cooldownRegistry = new CooldownRegistry();
-        CooldownService cooldownService = new CooldownService(configManager);
+        PermissionService permissionService = new PermissionService(configManager);
+        CooldownService cooldownService = new CooldownService(configManager, permissionService);
         CargoVisualFactory cargoVisualFactory = new CargoVisualFactory(this, configManager, messageService);
 
         // Watchdog и HookRegistrar создаются до PorterService,
@@ -71,7 +73,8 @@ public final class MoonPorter extends JavaPlugin {
                 messageService,
                 economyService,
                 regionProvider,
-                cooldownService
+                cooldownService,
+                permissionService
         );
 
         ReloadService reloadService = new ReloadService(configManager, tierRegistry, porterService, messageService);
@@ -87,7 +90,8 @@ public final class MoonPorter extends JavaPlugin {
         // Регистрация команд
         new CommandDispatcher(this).registerCommand(
                 "moonporter",
-                new MoonPorterCommand(configManager, tierRegistry, messageService, porterService, reloadService)
+                new MoonPorterCommand(configManager, tierRegistry, messageService,
+                        porterService, reloadService, permissionService)
         );
 
         hookRegistrar.registerCitizens();

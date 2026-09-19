@@ -51,6 +51,7 @@ public final class PorterService {
     private final EconomyService economyService;
     private final RegionProvider regionProvider;
     private final CooldownService cooldownService;
+    private final PermissionService permissionService;
 
     public PorterService(@NotNull MoonPorterConfig config,
                          @NotNull PorterRegistry porterRegistry,
@@ -61,7 +62,8 @@ public final class PorterService {
                          @NotNull MessageService messageService,
                          @NotNull EconomyService economyService,
                          @NotNull RegionProvider regionProvider,
-                         @NotNull CooldownService cooldownService) {
+                         @NotNull CooldownService cooldownService,
+                         @NotNull PermissionService permissionService) {
         this.config = config;
         this.porterRegistry = porterRegistry;
         this.tierRegistry = tierRegistry;
@@ -72,6 +74,7 @@ public final class PorterService {
         this.economyService = economyService;
         this.regionProvider = regionProvider;
         this.cooldownService = cooldownService;
+        this.permissionService = permissionService;
     }
 
     /**
@@ -117,7 +120,7 @@ public final class PorterService {
 
         }
 
-        if (!canUse(player)) {
+        if (!permissionService.hasUse(player)) {
 
             messageService.sendTitle(player, TitleType.NO_PERMISSION);
             return;
@@ -357,16 +360,6 @@ public final class PorterService {
 
         return regionProvider.isInAnyRegion(player.getLocation(), config.getAllowedRegions());
 
-    }
-
-    /**
-     * Проверяет право игрока на переноску груза.
-     *
-     * @param player игрок
-     * @return true если система прав выключена или право выдано
-     */
-    private boolean canUse(@NotNull Player player) {
-        return !config.arePermissionsEnabled() || player.hasPermission(config.getPermissionUse());
     }
 
     /**

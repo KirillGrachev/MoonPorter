@@ -4,6 +4,7 @@ import dev.moonlight.moonporter.config.MoonPorterConfig;
 import dev.moonlight.moonporter.config.PorterTier;
 import dev.moonlight.moonporter.registry.PorterTierRegistry;
 import dev.moonlight.moonporter.service.MessageService;
+import dev.moonlight.moonporter.service.PermissionService;
 import dev.moonlight.moonporter.service.PorterService;
 import dev.moonlight.moonporter.service.ReloadService;
 import org.bukkit.command.Command;
@@ -31,17 +32,20 @@ public final class MoonPorterCommand implements TabExecutor {
     private final MessageService messageService;
     private final PorterService porterService;
     private final ReloadService reloadService;
+    private final PermissionService permissionService;
 
     public MoonPorterCommand(@NotNull MoonPorterConfig config,
                              @NotNull PorterTierRegistry tierRegistry,
                              @NotNull MessageService messageService,
                              @NotNull PorterService porterService,
-                             @NotNull ReloadService reloadService) {
+                             @NotNull ReloadService reloadService,
+                             @NotNull PermissionService permissionService) {
         this.config = config;
         this.tierRegistry = tierRegistry;
         this.messageService = messageService;
         this.porterService = porterService;
         this.reloadService = reloadService;
+        this.permissionService = permissionService;
     }
 
     @Override
@@ -197,7 +201,7 @@ public final class MoonPorterCommand implements TabExecutor {
      * @return true если система прав выключена или право выдано
      */
     private boolean hasAdminPermission(@NotNull CommandSender sender) {
-        return !config.arePermissionsEnabled() || sender.hasPermission(config.getPermissionAdmin());
+        return permissionService.hasAdmin(sender);
     }
 
     /**

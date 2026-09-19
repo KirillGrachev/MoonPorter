@@ -18,6 +18,7 @@ settings:
     time: 45
   permissions:
     enabled: true
+    op_bypass: true
     admin: "test.admin"
     use: "test.use"
     bypass_cooldown: "test.bypass"

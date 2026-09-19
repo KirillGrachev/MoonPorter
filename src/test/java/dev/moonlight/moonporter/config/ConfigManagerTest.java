@@ -48,6 +48,7 @@ class ConfigManagerTest {
         MoonPorterConfig config = TestConfigs.load("/test-config.yml");
 
         assertTrue(config.arePermissionsEnabled());
+        assertTrue(config.isOpBypassEnabled());
         assertEquals("test.admin", config.getPermissionAdmin());
         assertEquals("test.use", config.getPermissionUse());
         assertEquals("test.bypass", config.getPermissionBypassCooldown());
@@ -152,6 +153,7 @@ class ConfigManagerTest {
         assertEquals(30_000L, config.getCooldownMillis());
 
         assertFalse(config.arePermissionsEnabled());
+        assertFalse(config.isOpBypassEnabled());
         assertEquals("moonporter.admin", config.getPermissionAdmin());
 
         assertEquals(20, config.getTitleFadeIn());
