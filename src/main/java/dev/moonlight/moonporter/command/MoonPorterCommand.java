@@ -70,7 +70,7 @@ public final class MoonPorterCommand implements TabExecutor {
 
             case ARG_GIVE -> giveCargo(sender, label, args);
 
-            case ARG_VISUAL -> tuneVisual(sender, args);
+            case ARG_VISUAL -> tuneVisual(sender, label, args);
 
             default -> messageService.sendLines(sender, config.getCommandUsageMessage(), usagePlaceholders(label));
 
@@ -185,9 +185,12 @@ public final class MoonPorterCommand implements TabExecutor {
      * Финальные значения администратор переносит в config.yml вручную.
      *
      * @param sender отправитель команды
+     * @param label  имя команды, которым её вызвали
      * @param args   аргументы: forward height left [name_height]
      */
-    private void tuneVisual(@NotNull CommandSender sender, String @NotNull [] args) {
+    private void tuneVisual(@NotNull CommandSender sender,
+                            @NotNull String label,
+                            String @NotNull [] args) {
 
         if (!hasPermission(sender)) {
             return;
@@ -202,7 +205,7 @@ public final class MoonPorterCommand implements TabExecutor {
 
         if (args.length < 4) {
 
-            messageService.sendString(sender, config.getCommandUsageMessage());
+            messageService.sendLines(sender, config.getCommandUsageMessage(), usagePlaceholders(label));
             return;
 
         }
@@ -227,7 +230,7 @@ public final class MoonPorterCommand implements TabExecutor {
 
         } catch (NumberFormatException exception) {
 
-            messageService.sendString(sender, config.getCommandUsageMessage());
+            messageService.sendLines(sender, config.getCommandUsageMessage(), usagePlaceholders(label));
 
         }
     }
