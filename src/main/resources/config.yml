@@ -1,4 +1,4 @@
-# Placeholders: {player}, {tier}, {weight}, {seconds}, {amount}, {label}, {tiers}, {regions}, {count}, {line}
+# Placeholders: {prefix}, {player}, {tier}, {weight}, {seconds}, {amount}, {label}, {tiers}, {regions}, {count}
 
 settings:
   enabled: true # Full on/off switch of the plugin
@@ -109,10 +109,10 @@ messages:
     subtitle: "&fNot enough permissions"
 
   command:
-    no_permission: "&cYou don't have permission for this command."
-    player_only: "&cThis command is available to players only."
-    no_tiers: "&cNo cargo levels are configured."
-    reload_success: "&aConfiguration reloaded. Cancelled deliveries: &e{count}"
+    no_permission: "{prefix}&cYou don't have permission for this command."
+    player_only: "{prefix}&cThis command is available to players only."
+    no_tiers: "{prefix}&cNo cargo levels are configured."
+    reload_success: "{prefix}&aConfiguration reloaded. Cancelled deliveries: &e{count}"
     reload_report:
       - ""
       - " &7enabled: &f{enabled}"
@@ -127,7 +127,7 @@ messages:
       - ""
     usage:
       - ""
-      - " &e/{label} reload &7— reload the configuration"
+      - " {prefix}&e/{label} reload &7— reload the configuration"
       - " &e/{label} give [tier] &7— hand out cargo"
       - " &7Tiers: &f{tiers}"
       - " &7Delivery regions: &f{regions}"

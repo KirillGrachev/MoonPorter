@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -79,7 +80,9 @@ public final class MessageService {
     }
 
     /**
-     * Отправляет одну строку из конфига с префиксом и плейсхолдерами.
+     * Отправляет одну строку из конфига с плейсхолдерами.
+     * Префикс не приклеивается автоматически: он доступен
+     * как плейсхолдер {prefix} в любом сообщении.
      *
      * @param sender       получатель (игрок или консоль)
      * @param text         строка сообщения
@@ -93,13 +96,13 @@ public final class MessageService {
             return;
         }
 
-        sender.sendMessage(withPrefix(PlaceholderUtil.apply(text, placeholders)));
+        sender.sendMessage(PlaceholderUtil.apply(text, prefixPlaceholders(placeholders)));
 
     }
 
     /**
-     * Отправляет список строк из конфига с префиксом и плейсхолдерами.
-     * Пустые строки списка сохраняются как отступы и префикс не получают.
+     * Отправляет список строк из конфига с плейсхолдерами.
+     * Пустые строки списка сохраняются как отступы.
      *
      * @param sender       получатель (игрок или консоль)
      * @param lines        строки сообщения
@@ -113,6 +116,8 @@ public final class MessageService {
             return;
         }
 
+        Map<String, ?> values = prefixPlaceholders(placeholders);
+
         for (String line : lines) {
 
             if (line.isEmpty()) {
@@ -122,9 +127,29 @@ public final class MessageService {
 
             }
 
-            sender.sendMessage(withPrefix(PlaceholderUtil.apply(line, placeholders)));
+            sender.sendMessage(PlaceholderUtil.apply(line, values));
 
         }
+
+    }
+
+    /**
+     * Добавляет плейсхолдер {prefix} к карте подстановок.
+     *
+     * @param placeholders плейсхолдеры вызывающего кода либо null
+     * @return карта с префиксом и исходными плейсхолдерами
+     */
+    private @NotNull Map<String, ?> prefixPlaceholders(@Nullable Map<String, ?> placeholders) {
+
+        Map<String, Object> values = new HashMap<>();
+
+        values.put("prefix", config.getPrefix());
+
+        if (placeholders != null) {
+            values.putAll(placeholders);
+        }
+
+        return values;
 
     }
 
@@ -149,21 +174,5 @@ public final class MessageService {
      */
     public @NotNull String formatReward(int amount) {
         return PlaceholderUtil.apply(config.getRewardFormat(), Map.of("amount", amount));
-    }
-
-    /**
-     * Добавляет префикс из messages.prefix к непустой строке.
-     *
-     * @param text строка сообщения
-     * @return строка с префиксом
-     */
-    private @NotNull String withPrefix(@NotNull String text) {
-
-        if (text.isEmpty()) {
-            return text;
-        }
-
-        return config.getPrefix() + text;
-
     }
 }

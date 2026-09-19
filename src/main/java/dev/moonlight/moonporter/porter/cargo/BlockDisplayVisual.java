@@ -16,12 +16,15 @@ import java.util.UUID;
  * Груз в руках: BlockDisplay без физики, который следует перед игроком
  * на высоте рук. Точка удержания настраивается в settings.cargo.hands_offset.
  *
- * Движение сглажено интерполяцией дисплея, таск живёт только пока жив груз.
- * Требует ядро 1.19.4+: на старых ядрах фабрика вернёт FallingBlockVisual.
+ * Позиция обновляется каждый тик телепортом без интерполяции:
+ * сглаживание дисплея давало видимый лаг на поворотах (груз уводило
+ * в бок от прежнего направления взгляда), поэтому от него отказались.
+ * Таск живёт только пока жив груз. Требует ядро 1.19.4+:
+ * на старых ядрах фабрика вернёт FallingBlockVisual.
  */
 public final class BlockDisplayVisual implements CargoVisual {
 
-    private static final long PERIOD_TICKS = 2L;
+    private static final long PERIOD_TICKS = 1L;
 
     private final MoonPorter plugin;
     private final BlockDisplay display;
@@ -47,8 +50,6 @@ public final class BlockDisplayVisual implements CargoVisual {
         this.display.setBlock(cargo.material().createBlockData());
         this.display.setPersistent(false);
         this.display.setInvulnerable(true);
-        this.display.setInterpolationDelay(0);
-        this.display.setInterpolationDuration(3);
 
     }
 
