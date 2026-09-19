@@ -31,4 +31,12 @@ public interface CargoVisual {
      * @return true если сущность существует в мире
      */
     boolean isAlive();
+
+    /**
+     * Применяет имя груза к визуализации.
+     *
+     * @param name    окрашенное имя с подставленными плейсхолдерами
+     * @param visible показывать ли неймтейг (settings.cargo.name_visible)
+     */
+    void applyName(@NotNull String name, boolean visible);
 }

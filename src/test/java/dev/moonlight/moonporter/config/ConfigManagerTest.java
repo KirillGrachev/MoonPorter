@@ -139,6 +139,7 @@ class ConfigManagerTest {
         assertTrue(config.isCargoNameVisible());
         assertEquals(0.50D, config.getHandsForward());
         assertEquals(1.15D, config.getHandsHeight());
+        assertEquals(0.5D, config.getHandsAnchor());
         assertTrue(config.isResetFlightEnabled());
         assertTrue(config.isResetGamemodeEnabled());
 

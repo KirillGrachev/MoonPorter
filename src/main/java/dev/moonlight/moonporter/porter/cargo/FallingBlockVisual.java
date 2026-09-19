@@ -21,11 +21,9 @@ import org.jetbrains.annotations.Nullable;
 public final class FallingBlockVisual implements CargoVisual {
 
     private final @Nullable FallingBlock fallingBlock;
-    private final boolean nameVisible;
 
-    public FallingBlockVisual(@Nullable FallingBlock fallingBlock, boolean nameVisible) {
+    public FallingBlockVisual(@Nullable FallingBlock fallingBlock) {
         this.fallingBlock = fallingBlock;
-        this.nameVisible = nameVisible;
     }
 
     @Override
@@ -46,10 +44,6 @@ public final class FallingBlockVisual implements CargoVisual {
         // иначе брошенный груз остаётся в чанке навсегда.
         fallingBlock.setPersistent(false);
 
-        if (fallingBlock.getCustomName() != null && nameVisible) {
-            fallingBlock.setCustomNameVisible(true);
-        }
-
         player.addPassenger(fallingBlock);
 
     }
@@ -68,5 +62,17 @@ public final class FallingBlockVisual implements CargoVisual {
     @Override
     public boolean isAlive() {
         return fallingBlock != null && fallingBlock.isValid();
+    }
+
+    @Override
+    public void applyName(@NotNull String name, boolean visible) {
+
+        if (fallingBlock == null) {
+            return;
+        }
+
+        fallingBlock.setCustomName(name);
+        fallingBlock.setCustomNameVisible(visible);
+
     }
 }

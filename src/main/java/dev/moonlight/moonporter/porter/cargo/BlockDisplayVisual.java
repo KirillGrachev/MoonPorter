@@ -34,6 +34,7 @@ public final class BlockDisplayVisual implements CargoVisual {
     private final Player carrier;
     private final double forward;
     private final double height;
+    private final double anchor;
 
     private @Nullable BukkitTask task;
 
@@ -41,12 +42,14 @@ public final class BlockDisplayVisual implements CargoVisual {
                               @NotNull Player player,
                               @NotNull Cargo cargo,
                               double forward,
-                              double height) {
+                              double height,
+                              double anchor) {
 
         this.plugin = plugin;
         this.carrier = player;
         this.forward = forward;
         this.height = height;
+        this.anchor = anchor;
 
         this.display = player.getWorld().spawn(player.getLocation(), BlockDisplay.class);
 
@@ -92,6 +95,14 @@ public final class BlockDisplayVisual implements CargoVisual {
         return display.isValid();
     }
 
+    @Override
+    public void applyName(@NotNull String name, boolean visible) {
+
+        display.setCustomName(name);
+        display.setCustomNameVisible(visible);
+
+    }
+
     /**
      * Ставит груз по центру перед корпусом носителя.
      * Горизонталь — по yaw тела, высота — фиксировано над ногами:
@@ -99,6 +110,10 @@ public final class BlockDisplayVisual implements CargoVisual {
      *
      * Знаки компонентов соответствуют конвенции Bukkit:
      * forward = (-sin(yaw), +cos(yaw)), yaw 0 смотрит в +Z.
+     *
+     * Ядро рендерит блок дисплея от угла, а не от центра сущности,
+     * поэтому из точки удержания вычитается поправка anchor
+     * (settings.cargo.hands_offset.anchor) по каждой мировой оси.
      */
     private void follow() {
 
@@ -109,9 +124,9 @@ public final class BlockDisplayVisual implements CargoVisual {
         Location hands = carrier.getLocation();
         double yaw = Math.toRadians(hands.getYaw());
 
-        hands.setX(hands.getX() - Math.sin(yaw) * forward);
-        hands.setZ(hands.getZ() + Math.cos(yaw) * forward);
-        hands.setY(hands.getY() + height);
+        hands.setX(hands.getX() - Math.sin(yaw) * forward - anchor);
+        hands.setZ(hands.getZ() + Math.cos(yaw) * forward - anchor);
+        hands.setY(hands.getY() + height - anchor);
 
         display.teleport(hands);
 

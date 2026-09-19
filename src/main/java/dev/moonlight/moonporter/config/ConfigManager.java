@@ -42,6 +42,7 @@ public final class ConfigManager implements MoonPorterConfig {
     private static final String PATH_CARGO_NAME_VISIBLE = "settings.cargo.name_visible";
     private static final String PATH_HANDS_FORWARD = "settings.cargo.hands_offset.forward";
     private static final String PATH_HANDS_HEIGHT = "settings.cargo.hands_offset.height";
+    private static final String PATH_HANDS_ANCHOR = "settings.cargo.hands_offset.anchor";
     private static final String PATH_RESET_FLIGHT = "settings.violations.reset_flight";
     private static final String PATH_RESET_GAMEMODE = "settings.violations.reset_gamemode";
     private static final String PATH_TITLE_ENABLED = "settings.title.enabled";
@@ -77,6 +78,7 @@ public final class ConfigManager implements MoonPorterConfig {
     private boolean cargoNameVisible;
     private double handsForward;
     private double handsHeight;
+    private double handsAnchor;
     private boolean resetFlight;
     private boolean resetGamemode;
     private boolean titleEnabled;
@@ -166,6 +168,7 @@ public final class ConfigManager implements MoonPorterConfig {
         cargoNameVisible = config.getBoolean(PATH_CARGO_NAME_VISIBLE, true);
         handsForward = config.getDouble(PATH_HANDS_FORWARD, 0.50D);
         handsHeight = config.getDouble(PATH_HANDS_HEIGHT, 1.15D);
+        handsAnchor = config.getDouble(PATH_HANDS_ANCHOR, 0.5D);
 
         resetFlight = config.getBoolean(PATH_RESET_FLIGHT, true);
         resetGamemode = config.getBoolean(PATH_RESET_GAMEMODE, true);
@@ -482,6 +485,11 @@ public final class ConfigManager implements MoonPorterConfig {
     @Override
     public double getHandsHeight() {
         return handsHeight;
+    }
+
+    @Override
+    public double getHandsAnchor() {
+        return handsAnchor;
     }
 
     @Override

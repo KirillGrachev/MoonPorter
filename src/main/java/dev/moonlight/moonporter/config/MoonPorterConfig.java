@@ -30,6 +30,13 @@ public interface MoonPorterConfig {
 
     double getHandsHeight();
 
+    /**
+     * Поправка якоря рендера блока дисплея (в блоках по каждой оси).
+     *
+     * @return значение поправки
+     */
+    double getHandsAnchor();
+
     /* Нарушения */
 
     boolean isResetFlightEnabled();

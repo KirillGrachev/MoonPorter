@@ -81,5 +81,9 @@ class DeliverySessionTest {
         public boolean isAlive() {
             return false;
         }
+
+        @Override
+        public void applyName(@NotNull String name, boolean visible) {
+        }
     }
 }

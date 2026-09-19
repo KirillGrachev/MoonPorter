@@ -78,9 +78,11 @@ public final class CargoVisualFactory {
                         player,
                         cargo,
                         config.getHandsForward(),
-                        config.getHandsHeight()
+                        config.getHandsHeight(),
+                        config.getHandsAnchor()
                 );
 
+                visual.applyName(cargo.displayName(), config.isCargoNameVisible());
                 visual.attach(player);
 
                 return visual;
@@ -98,10 +100,9 @@ public final class CargoVisualFactory {
                 cargo.material().createBlockData()
         );
 
-        fallingBlock.setCustomName(cargo.displayName());
+        FallingBlockVisual visual = new FallingBlockVisual(fallingBlock);
 
-        FallingBlockVisual visual = new FallingBlockVisual(fallingBlock, config.isCargoNameVisible());
-
+        visual.applyName(cargo.displayName(), config.isCargoNameVisible());
         visual.attach(player);
 
         return visual;
