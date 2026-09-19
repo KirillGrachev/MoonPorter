@@ -2,28 +2,39 @@ package dev.moonlight.moonporter.porter.cargo;
 
 import dev.moonlight.moonporter.MoonPorter;
 import dev.moonlight.moonporter.config.MoonPorterConfig;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.BlockDisplay;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.util.BoundingBox;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.UUID;
 
 /**
  * Груз в двух руках: BlockDisplay без физики перед корпусом игрока
  * и невидимый маркер-armor stand для неймтейга над грузом.
+ * Armor stand не является грузом: он только несёт имя, потому что
+ * у BlockDisplay неймтейг прилипает к центру блока.
  *
- * Смещение считается в локальной системе координат игрока
- * (вперёд / высота / влево), поэтому на любых четырёх сторонах света
- * груз держится одинаково относительно тела. Значения читаются из
- * конфигурации каждый тик: правка конфига и /mporter reload
- * применяются к уже несомому грузу без перевыдачи.
+ * Позиция строится в локальной системе координат игрока
+ * (вперёд / высота / влево) и читается из конфигурации каждый тик:
+ * правка конфига или /mporter visual применяются к несомому грузу.
  *
- * Неймтейг ведёт отдельный маркер: у BlockDisplay имя прилипает
- * к центру блока, а маркер ставится над грузом на name_height.
- * Позиция обновляется каждый тик телепортом без интерполяции.
+ * Две особенности ядра компенсируются автоматически:
+ * 1. Блок дисплея рендерится повёрнутым по yaw сущности, поэтому
+ *    дисплей всегда телепортируется с yaw 0 — груз стоит ровно,
+ *    как его и держат, на любом повороте игрока.
+ * 2. Рендер-якорь ядра смещает блок на константу относительно позиции
+ *    сущности. Смещение измеряется один раз при спавне через
+ *    bounding box дисплея и вычитается каждый тик. Если ядро не
+ *    отражает рендер в bounding box (объём нулевой), поправка
+ *    остаётся нулевой и всё работает как прежде.
+ *
  * Таск живёт только пока жив груз. Требует ядро 1.19.4+:
  * на старых ядрах фабрика вернёт FallingBlockVisual.
  */
@@ -35,7 +46,11 @@ public final class BlockDisplayVisual implements CargoVisual {
     private final MoonPorterConfig config;
     private final BlockDisplay display;
     private final ArmorStand nameTag;
-    private final Player carrier;
+    private final UUID carrierId;
+
+    private final double offsetX;
+    private final double offsetY;
+    private final double offsetZ;
 
     private @Nullable BukkitTask task;
 
@@ -46,7 +61,7 @@ public final class BlockDisplayVisual implements CargoVisual {
 
         this.plugin = plugin;
         this.config = config;
-        this.carrier = player;
+        this.carrierId = player.getUniqueId();
 
         this.display = player.getWorld().spawn(player.getLocation(), BlockDisplay.class);
 
@@ -61,6 +76,12 @@ public final class BlockDisplayVisual implements CargoVisual {
         this.nameTag.setGravity(false);
         this.nameTag.setPersistent(false);
         this.nameTag.setInvulnerable(true);
+
+        double[] measured = calibrate(player);
+
+        this.offsetX = measured[0];
+        this.offsetY = measured[1];
+        this.offsetZ = measured[2];
 
     }
 
@@ -113,19 +134,53 @@ public final class BlockDisplayVisual implements CargoVisual {
     }
 
     /**
+     * Измеряет, куда ядро фактически рисует блок относительно позиции сущности.
+     * Дисплей ставится в известную точку с yaw 0, после чего центр
+     * его bounding box сравнивается с этой точкой.
+     *
+     * @param player носитель груза
+     * @return поправка рендера по осям мира либо нули, если измерить не удалось
+     */
+    private double @NotNull [] calibrate(@NotNull Player player) {
+
+        Location probe = player.getLocation();
+
+        probe.setYaw(0.0F);
+        probe.setPitch(0.0F);
+
+        display.teleport(probe);
+
+        BoundingBox box = display.getBoundingBox();
+
+        if (box == null || box.getVolume() <= 0.0D) {
+            return new double[]{0.0D, 0.0D, 0.0D};
+        }
+
+        return new double[]{
+                box.getCenterX() - probe.getX(),
+                box.getCenterY() - probe.getY(),
+                box.getCenterZ() - probe.getZ()
+        };
+
+    }
+
+    /**
      * Ставит груз по центру перед корпусом и неймтейг над грузом.
      *
      * Локальные оси игрока: вперёд = (-sin(yaw), +cos(yaw)),
      * влево = (cos(yaw), +sin(yaw)); высоты считаются от ног.
-     * Значения читаются из кэша конфигурации на каждый тик.
+     * Дисплей телепортируется с yaw 0 и вычтенной поправкой рендера,
+     * поэтому на любых поворотах груз стоит ровно и на своём месте.
      */
     private void follow() {
 
-        if (!carrier.isOnline()) {
+        Player player = Bukkit.getPlayer(carrierId);
+
+        if (player == null || !player.isOnline()) {
             return;
         }
 
-        Location base = carrier.getLocation();
+        Location base = player.getLocation();
         double yaw = Math.toRadians(base.getYaw());
 
         double forward = config.getHandsForward();
@@ -139,12 +194,14 @@ public final class BlockDisplayVisual implements CargoVisual {
                 + Math.sin(yaw) * left;
         double y = base.getY() + config.getHandsHeight();
 
-        Location hands = new Location(base.getWorld(), x, y, z);
+        display.teleport(new Location(base.getWorld(),
+                x - offsetX,
+                y - offsetY,
+                z - offsetZ,
+                0.0F,
+                0.0F));
 
-        display.teleport(hands);
-
-        hands.setY(y + config.getNameHeight());
-        nameTag.teleport(hands);
+        nameTag.teleport(new Location(base.getWorld(), x, y + config.getNameHeight(), z));
 
     }
 }
