@@ -31,11 +31,18 @@ public interface MoonPorterConfig {
     double getHandsHeight();
 
     /**
-     * Поправка якоря рендера блока дисплея (в блоках по каждой оси).
+     * Смещение точки удержания влево от игрока (в блоках).
      *
-     * @return значение поправки
+     * @return смещение влево, отрицательное — вправо
      */
-    double getHandsAnchor();
+    double getHandsLeft();
+
+    /**
+     * Высота неймтейга над точкой удержания (в блоках).
+     *
+     * @return высота над грузом
+     */
+    double getNameHeight();
 
     /* Нарушения */
 

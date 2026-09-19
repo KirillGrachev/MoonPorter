@@ -75,11 +75,9 @@ public final class CargoVisualFactory {
 
                 BlockDisplayVisual visual = new BlockDisplayVisual(
                         plugin,
+                        config,
                         player,
-                        cargo,
-                        config.getHandsForward(),
-                        config.getHandsHeight(),
-                        config.getHandsAnchor()
+                        cargo
                 );
 
                 visual.applyName(cargo.displayName(), config.isCargoNameVisible());

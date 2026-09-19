@@ -7,11 +7,11 @@ settings:
     visual: HEAD # HEAD — cargo rides above the head (any core 1.16+).
     # HANDS — block display held in front of the player (core 1.19.4+, falls back to HEAD)
     name_visible: true # Show the cargo name above the entity
-    hands_offset: # Tuning of the HANDS visual
+    hands_offset: # Tuning of the HANDS visual, applied live every tick
       forward: 0.50 # Distance in front of the chest (in blocks)
-      height: 1.15 # Block center height above the player's feet (in blocks)
-      anchor: 0.5 # Render anchor correction: the core draws the display block
-      # from its corner, so half a block is subtracted on every world axis
+      height: 1.15 # Hold point height above the player's feet (in blocks)
+      left: 0.0 # Shift to the player's left (in blocks), negative — to the right
+    name_height: 0.75 # Nametag height above the hold point (in blocks)
   violations:
     reset_flight: true # Turn flight off on violation; false — only take the cargo away
     reset_gamemode: true # Force survival on violation; false — only take the cargo away
