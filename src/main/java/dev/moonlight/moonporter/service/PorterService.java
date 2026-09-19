@@ -80,7 +80,15 @@ public final class PorterService {
      * @param player игрок, кликнувший по NPC
      */
     public void pickup(@NotNull Player player) {
-        pickup(player, tierRegistry.getRandomTier());
+
+        PorterTier tier = tierRegistry.getRandomTier();
+
+        if (tier == null) {
+            return;
+        }
+
+        pickup(player, tier);
+
     }
 
     /**

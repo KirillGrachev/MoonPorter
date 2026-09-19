@@ -1,5 +1,6 @@
 package dev.moonlight.moonporter.config;
 
+import dev.moonlight.moonporter.config.type.CargoVisualType;
 import dev.moonlight.moonporter.config.type.DeliveryTrigger;
 import dev.moonlight.moonporter.config.type.TitleType;
 import org.bukkit.Material;
@@ -98,6 +99,13 @@ class ConfigManagerTest {
         assertEquals("§aReloaded: {count}", config.getReloadSuccessMessage());
         assertEquals(3, config.getCommandUsageMessage().size());
 
+        // отсутствующий ключ сообщения: пустая строка и warning в консоль,
+        // никакого встроенного текста из кода
+        assertEquals("", config.getCommandNoTiersMessage());
+
+        // отчёт перезагрузки — список строк из конфига с плейсхолдерами
+        assertEquals(1, config.getReloadReportMessage().size());
+
         TitleMessage success = config.getTitle(TitleType.PICKUP_SUCCESS);
 
         assertTrue(success.enabled());
@@ -107,12 +115,11 @@ class ConfigManagerTest {
         // enabled: false отключает титул целиком
         assertTrue(config.getTitle(TitleType.PICKUP_DENIED).isDisabled());
 
-        // отсутствующая секция даёт встроенный дефолт: отказ не молчит
-        TitleMessage flight = config.getTitle(TitleType.FLIGHT);
+        // отсутствующая секция: титул отключён, в консоль уходит warning с путём
+        assertTrue(config.getTitle(TitleType.FLIGHT).isDisabled());
 
-        assertTrue(flight.enabled());
-        assertEquals("§cError!", flight.title());
-        assertEquals("§fDisable flight", flight.subtitle());
+        // секция есть, но тексты пустые: титул тоже отключён
+        assertTrue(config.getTitle(TitleType.TIMEOUT).isDisabled());
 
     }
 
@@ -125,9 +132,19 @@ class ConfigManagerTest {
         assertTrue(config.isEnabled());
         assertEquals(Material.BARREL, config.getMaterial());
 
+        assertEquals(CargoVisualType.HEAD, config.getCargoVisualType());
+        assertTrue(config.isCargoNameVisible());
+        assertEquals(0.55D, config.getHandsForward());
+        assertEquals(0.45D, config.getHandsDown());
+        assertTrue(config.isResetFlightEnabled());
+        assertTrue(config.isResetGamemodeEnabled());
+
         assertEquals(DeliveryTrigger.SNEAK_TOGGLE, config.getDeliveryTrigger());
         assertEquals(15, config.getDeliveryTimeout());
         assertEquals(0.0D, config.getDeliveryRadius());
+
+        // пустой конфиг: отчёта нет, в консоль уходит warning об отсутствующей секции
+        assertTrue(config.getReloadReportMessage().isEmpty());
 
         assertFalse(config.isCooldownEnabled());
         assertEquals(30, config.getCooldownTime());

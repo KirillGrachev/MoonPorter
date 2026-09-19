@@ -53,11 +53,17 @@ messages:
       title: "&cОтказ"
       subtitle: "&fЗанят"
 
+  timeout:
+    enabled: true
+    title: ""
+    subtitle: ""
+
   command:
     no_permission: "&cНет прав."
     player_only: "&cТолько игроки."
     reload_success: "&aReloaded: {count}"
-    reload_entry: " - {line}"
+    reload_report:
+      - " &7material: &f{material}"
     usage:
       - ""
       - " &e/{label} help"

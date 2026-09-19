@@ -1,6 +1,7 @@
 package dev.moonlight.moonporter.config;
 
 import dev.moonlight.moonporter.MoonPorter;
+import dev.moonlight.moonporter.config.type.CargoVisualType;
 import dev.moonlight.moonporter.config.type.DeliveryTrigger;
 import dev.moonlight.moonporter.config.type.TitleType;
 import dev.moonlight.moonporter.util.HexColorUtil;
@@ -16,6 +17,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -35,6 +37,12 @@ public final class ConfigManager implements MoonPorterConfig {
 
     private static final String PATH_ENABLED = "settings.enabled";
     private static final String PATH_MATERIAL = "settings.material";
+    private static final String PATH_CARGO_VISUAL = "settings.cargo.visual";
+    private static final String PATH_CARGO_NAME_VISIBLE = "settings.cargo.name_visible";
+    private static final String PATH_HANDS_FORWARD = "settings.cargo.hands_offset.forward";
+    private static final String PATH_HANDS_DOWN = "settings.cargo.hands_offset.down";
+    private static final String PATH_RESET_FLIGHT = "settings.violations.reset_flight";
+    private static final String PATH_RESET_GAMEMODE = "settings.violations.reset_gamemode";
     private static final String PATH_TITLE_ENABLED = "settings.title.enabled";
     private static final String PATH_TITLE_FADE_IN = "settings.title.fade_in";
     private static final String PATH_TITLE_STAY = "settings.title.stay";
@@ -58,10 +66,17 @@ public final class ConfigManager implements MoonPorterConfig {
     private static final String PATH_COMMAND_PLAYER_ONLY = "messages.command.player_only";
     private static final String PATH_COMMAND_USAGE = "messages.command.usage";
     private static final String PATH_RELOAD_SUCCESS = "messages.command.reload_success";
-    private static final String PATH_RELOAD_ENTRY = "messages.command.reload_entry";
+    private static final String PATH_COMMAND_NO_TIERS = "messages.command.no_tiers";
+    private static final String PATH_RELOAD_REPORT = "messages.command.reload_report";
 
     private boolean enabled;
     private Material material;
+    private CargoVisualType cargoVisualType;
+    private boolean cargoNameVisible;
+    private double handsForward;
+    private double handsDown;
+    private boolean resetFlight;
+    private boolean resetGamemode;
     private boolean titleEnabled;
     private int titleFadeIn;
     private int titleStay;
@@ -85,7 +100,8 @@ public final class ConfigManager implements MoonPorterConfig {
     private String commandPlayerOnlyMessage;
     private List<String> commandUsageMessage;
     private String reloadSuccessMessage;
-    private String reloadEntryFormat;
+    private String commandNoTiersMessage;
+    private List<String> reloadReportMessage;
 
     private final Map<TitleType, TitleMessage> titles = new EnumMap<>(TitleType.class);
 
@@ -142,6 +158,14 @@ public final class ConfigManager implements MoonPorterConfig {
         enabled = config.getBoolean(PATH_ENABLED, true);
         material = readMaterial();
 
+        cargoVisualType = readEnum(PATH_CARGO_VISUAL, CargoVisualType.class, CargoVisualType.HEAD);
+        cargoNameVisible = config.getBoolean(PATH_CARGO_NAME_VISIBLE, true);
+        handsForward = config.getDouble(PATH_HANDS_FORWARD, 0.55D);
+        handsDown = config.getDouble(PATH_HANDS_DOWN, 0.45D);
+
+        resetFlight = config.getBoolean(PATH_RESET_FLIGHT, true);
+        resetGamemode = config.getBoolean(PATH_RESET_GAMEMODE, true);
+
         titleEnabled = config.getBoolean(PATH_TITLE_ENABLED, true);
         titleFadeIn = config.getInt(PATH_TITLE_FADE_IN, 20);
         titleStay = config.getInt(PATH_TITLE_STAY, 40);
@@ -166,11 +190,19 @@ public final class ConfigManager implements MoonPorterConfig {
         prefix = HexColorUtil.color(config.getString(PATH_PREFIX, ""));
         rewardFormat = config.getString(PATH_REWARD_FORMAT, "{amount}$");
 
-        commandNoPermissionMessage = HexColorUtil.color(config.getString(PATH_COMMAND_NO_PERMISSION, ""));
-        commandPlayerOnlyMessage = HexColorUtil.color(config.getString(PATH_COMMAND_PLAYER_ONLY, ""));
+        commandNoPermissionMessage = readMessageString(PATH_COMMAND_NO_PERMISSION);
+        commandPlayerOnlyMessage = readMessageString(PATH_COMMAND_PLAYER_ONLY);
         commandUsageMessage = readColoredList(PATH_COMMAND_USAGE);
-        reloadSuccessMessage = HexColorUtil.color(config.getString(PATH_RELOAD_SUCCESS, ""));
-        reloadEntryFormat = HexColorUtil.color(config.getString(PATH_RELOAD_ENTRY, " &7• &f{line}"));
+        reloadSuccessMessage = readMessageString(PATH_RELOAD_SUCCESS);
+        commandNoTiersMessage = readMessageString(PATH_COMMAND_NO_TIERS);
+        reloadReportMessage = readColoredList(PATH_RELOAD_REPORT);
+
+        if (reloadReportMessage.isEmpty()) {
+
+            logger.warning("Сообщение '" + PATH_RELOAD_REPORT + "' не найдено или пусто — "
+                    + "отчёт перезагрузки показываться не будет.");
+
+        }
 
         cachePorterTiers();
         cacheTitles();
@@ -226,7 +258,7 @@ public final class ConfigManager implements MoonPorterConfig {
     }
 
     /**
-     * Читает блок сообщения-списка вида "text: [...]" и окрашивает строки.
+     * Читает список строк сообщения вида "text: [...]" и окрашивает строки.
      *
      * @param path путь к списку строк
      * @return неизменяемый список окрашенных строк
@@ -236,6 +268,30 @@ public final class ConfigManager implements MoonPorterConfig {
         return config.getStringList(path).stream()
                 .map(HexColorUtil::color)
                 .collect(Collectors.toUnmodifiableList());
+
+    }
+
+    /**
+     * Читает одиночную строку сообщения из конфига.
+     * Отсутствующий ключ не подменяется текстом из кода:
+     * сообщение отключается, а в консоль уходит warning с путём.
+     *
+     * @param path путь к строке сообщения
+     * @return окрашенная строка либо пустая строка
+     */
+    private @NotNull String readMessageString(@NotNull String path) {
+
+        String raw = config.getString(path);
+
+        if (raw == null || raw.isEmpty()) {
+
+            logger.warning("Сообщение '" + path + "' не найдено в config.yml — "
+                    + "отправляться не будет.");
+            return "";
+
+        }
+
+        return HexColorUtil.color(raw);
 
     }
 
@@ -264,6 +320,13 @@ public final class ConfigManager implements MoonPorterConfig {
             }
         }
 
+        if (tiers.isEmpty()) {
+
+            logger.warning("Секция '" + PATH_PORTERS + "' не найдена или пуста — "
+                    + "уровней груза нет, выдача груза отключена до исправления конфигурации.");
+
+        }
+
         porterTiers = Collections.unmodifiableList(tiers);
 
     }
@@ -278,7 +341,17 @@ public final class ConfigManager implements MoonPorterConfig {
      */
     private @NotNull PorterTier readPorterTier(@NotNull String id, @NotNull ConfigurationSection section) {
 
-        String name = section.getString("name", "&f" + id);
+        String rawName = section.getString("name");
+
+        if (rawName == null || rawName.isBlank()) {
+
+            logger.warning("В секции '" + PATH_PORTERS + "." + id
+                    + "' нет name — именем уровня будет его ключ.");
+            rawName = id;
+
+        }
+
+        String name = HexColorUtil.color(rawName);
 
         String rawReward = section.getString("reward", "0-0");
 
@@ -306,60 +379,32 @@ public final class ConfigManager implements MoonPorterConfig {
 
         for (TitleType type : TitleType.values()) {
 
-            ConfigurationSection section = config.getConfigurationSection("messages." + type.getPath());
+            String path = "messages." + type.getPath();
+            ConfigurationSection section = config.getConfigurationSection(path);
 
-            // Отсутствующая секция не должна делать отказ молчаливым:
-            // подставляется встроенный английский текст.
             if (section == null) {
 
-                titles.put(type, defaultTitle(type));
+                logger.warning("Секция сообщений '" + path
+                        + "' не найдена в config.yml — титул отправляться не будет.");
+                titles.put(type, TitleMessage.empty());
                 continue;
 
             }
 
-            titles.put(type, new TitleMessage(
-                    section.getBoolean("enabled", true),
-                    HexColorUtil.color(section.getString("title", "")),
-                    HexColorUtil.color(section.getString("subtitle", ""))
-            ));
+            boolean enabled = section.getBoolean("enabled", true);
+            String title = HexColorUtil.color(section.getString("title", ""));
+            String subtitle = HexColorUtil.color(section.getString("subtitle", ""));
+
+            if (enabled && title.isEmpty() && subtitle.isEmpty()) {
+
+                logger.warning("В секции сообщений '" + path
+                        + "' пустые title и subtitle — титул отправляться не будет.");
+
+            }
+
+            titles.put(type, new TitleMessage(enabled, title, subtitle));
 
         }
-    }
-
-    /**
-     * Встроенное значение титула на случай отсутствующей секции конфига.
-     *
-     * @param title      основной текст
-     * @param subtitle   текст подзаголовка
-     * @return включённый титул с окрашенными строками
-     */
-    private @NotNull TitleMessage title(@NotNull String title, @NotNull String subtitle) {
-        return new TitleMessage(true, HexColorUtil.color(title), HexColorUtil.color(subtitle));
-    }
-
-    /**
-     * Английские титулы по умолчанию для каждого типа.
-     *
-     * @param type тип титула
-     * @return титул по умолчанию
-     */
-    private @NotNull TitleMessage defaultTitle(@NotNull TitleType type) {
-
-        return switch (type) {
-
-            case PICKUP_SUCCESS -> title("&a✔", "&fYou took the cargo");
-            case PICKUP_DENIED -> title("&cError!", "&fYou are already carrying cargo");
-            case PICKUP_WRONG_WORLD -> title("&cError!", "&fCargo is unavailable in this world");
-            case DELIVERY_SUCCESS -> title("&aGood job!", "&fYou received &e{amount}");
-            case DELIVERY_WRONG_WORLD -> title("&cError!", "&fCargo cannot be delivered in this world");
-            case DELIVERY_WRONG_POINT -> title("&cError!", "&fDeliver the cargo to the configured region");
-            case FLIGHT -> title("&cError!", "&fDisable flight");
-            case GAMEMODE -> title("&cError!", "&fSurvival mode only");
-            case TIMEOUT -> title("&cError!", "&fYou did not deliver the cargo in time");
-            case COOLDOWN -> title("&c⌛ Cooldown", "&fWait &e{seconds} more sec.");
-            case NO_PERMISSION -> title("&cError!", "&fNot enough permissions");
-
-        };
     }
 
     private <T extends Enum<T>> @NotNull T readEnum(@NotNull String path,
@@ -392,6 +437,36 @@ public final class ConfigManager implements MoonPorterConfig {
     @Override
     public @NotNull Material getMaterial() {
         return material;
+    }
+
+    @Override
+    public @NotNull CargoVisualType getCargoVisualType() {
+        return cargoVisualType;
+    }
+
+    @Override
+    public boolean isCargoNameVisible() {
+        return cargoNameVisible;
+    }
+
+    @Override
+    public double getHandsForward() {
+        return handsForward;
+    }
+
+    @Override
+    public double getHandsDown() {
+        return handsDown;
+    }
+
+    @Override
+    public boolean isResetFlightEnabled() {
+        return resetFlight;
+    }
+
+    @Override
+    public boolean isResetGamemodeEnabled() {
+        return resetGamemode;
     }
 
     @Override
@@ -515,8 +590,13 @@ public final class ConfigManager implements MoonPorterConfig {
     }
 
     @Override
-    public @NotNull String getReloadEntryFormat() {
-        return reloadEntryFormat;
+    public @NotNull String getCommandNoTiersMessage() {
+        return commandNoTiersMessage;
+    }
+
+    @Override
+    public @NotNull List<String> getReloadReportMessage() {
+        return reloadReportMessage;
     }
 
     @Override
@@ -526,24 +606,29 @@ public final class ConfigManager implements MoonPorterConfig {
     }
 
     /**
-     * Краткое описание прочитанных значений — для отчёта команды reload.
+     * Значения прочитанных настроек для отчёта команды reload.
+     * Лейблы строк отчёта живут в config.yml (messages.command.reload_report),
+     * здесь только значения под плейсхолдеры.
      *
-     * @return неизменяемый список строк отчёта
+     * @return неизменяемая карта плейсхолдеров отчёта
      */
-    public @NotNull List<String> describe() {
+    public @NotNull Map<String, String> describeValues() {
 
-        List<String> description = new ArrayList<>();
+        Map<String, String> values = new HashMap<>();
 
-        description.add("material: " + material.name());
-        description.add("npc ids: " + npcIds);
-        description.add("worlds: " + allowedWorlds);
-        description.add("regions: " + allowedRegions);
-        description.add("porters: " + porterTiers.stream().map(PorterTier::id).collect(Collectors.toList()));
-        description.add("delivery: " + deliveryTrigger.name() + ", timeout " + deliveryTimeout + "s");
-        description.add("cooldown: " + (cooldownEnabled ? cooldownTime + "s" : "off"));
-        description.add("permissions: " + (permissionsEnabled ? "on" : "off"));
+        values.put("enabled", String.valueOf(enabled));
+        values.put("material", material.name());
+        values.put("npc_ids", String.valueOf(npcIds));
+        values.put("worlds", String.valueOf(allowedWorlds));
+        values.put("regions", String.valueOf(allowedRegions));
+        values.put("porters", porterTiers.stream()
+                .map(PorterTier::id)
+                .collect(Collectors.joining(", ")));
+        values.put("delivery", deliveryTrigger.name() + ", timeout " + deliveryTimeout + "s");
+        values.put("cooldown", cooldownEnabled ? cooldownTime + "s" : "off");
+        values.put("permissions", permissionsEnabled ? "on" : "off");
 
-        return Collections.unmodifiableList(description);
+        return Collections.unmodifiableMap(values);
 
     }
 }

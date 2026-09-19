@@ -1,6 +1,7 @@
 package dev.moonlight.moonporter.porter;
 
 import dev.moonlight.moonporter.MoonPorter;
+import dev.moonlight.moonporter.config.MoonPorterConfig;
 import dev.moonlight.moonporter.config.type.CancelReason;
 import dev.moonlight.moonporter.registry.PorterRegistry;
 import dev.moonlight.moonporter.service.PorterService;
@@ -26,13 +27,17 @@ public final class DeliveryWatchdog {
 
     private final MoonPorter plugin;
     private final PorterRegistry registry;
+    private final MoonPorterConfig config;
 
     private @Nullable PorterService porterService;
     private @Nullable BukkitTask task;
 
-    public DeliveryWatchdog(@NotNull MoonPorter plugin, @NotNull PorterRegistry registry) {
+    public DeliveryWatchdog(@NotNull MoonPorter plugin,
+                            @NotNull PorterRegistry registry,
+                            @NotNull MoonPorterConfig config) {
         this.plugin = plugin;
         this.registry = registry;
+        this.config = config;
     }
 
     /**
@@ -101,9 +106,12 @@ public final class DeliveryWatchdog {
 
             CancelReason reason = detectViolation(player, session, now);
 
-            if (reason != null) {
-                porterService.cancel(player, reason);
+            if (reason == null) {
+                continue;
             }
+
+            applyViolationEffects(player, reason);
+            porterService.cancel(player, reason);
 
         }
     }
@@ -131,23 +139,36 @@ public final class DeliveryWatchdog {
         }
 
         if (player.isFlying()) {
+            return CancelReason.FLYING;
+        }
+
+        if (player.getGameMode() != GameMode.SURVIVAL) {
+            return CancelReason.GAMEMODE;
+        }
+
+        return null;
+
+    }
+
+    /**
+     * Применяет последствия нарушения, разрешённые конфигурацией.
+     * Груз изымается в любом случае — здесь только сброс состояния игрока.
+     *
+     * @param player несущий игрок
+     * @param reason причина отмены
+     */
+    private void applyViolationEffects(@NotNull Player player, @NotNull CancelReason reason) {
+
+        if (reason == CancelReason.FLYING && config.isResetFlightEnabled()) {
 
             player.setFlying(false);
             player.setAllowFlight(false);
 
-            return CancelReason.FLYING;
-
         }
 
-        if (player.getGameMode() != GameMode.SURVIVAL) {
-
+        if (reason == CancelReason.GAMEMODE && config.isResetGamemodeEnabled()) {
             player.setGameMode(GameMode.SURVIVAL);
-
-            return CancelReason.GAMEMODE;
-
         }
-
-        return null;
 
     }
 

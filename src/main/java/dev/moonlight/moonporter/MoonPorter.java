@@ -51,12 +51,12 @@ public final class MoonPorter extends JavaPlugin {
         PorterTierRegistry tierRegistry = new PorterTierRegistry(configManager);
         CooldownRegistry cooldownRegistry = new CooldownRegistry();
         CooldownService cooldownService = new CooldownService(configManager);
-        CargoVisualFactory cargoVisualFactory = new CargoVisualFactory(configManager, messageService);
+        CargoVisualFactory cargoVisualFactory = new CargoVisualFactory(this, configManager, messageService);
 
         // Watchdog и HookRegistrar создаются до PorterService,
         // потому что сами нужны ему в конструкторе. Обратная ссылка
         // проставляется через bind() сразу после создания сервиса.
-        this.deliveryWatchdog = new DeliveryWatchdog(this, porterRegistry);
+        this.deliveryWatchdog = new DeliveryWatchdog(this, porterRegistry, configManager);
 
         HookRegistrar hookRegistrar = new HookRegistrar(this);
         RegionProvider regionProvider = hookRegistrar.resolveRegionProvider();

@@ -1,7 +1,9 @@
 package dev.moonlight.moonporter.porter.cargo;
 
+import dev.moonlight.moonporter.MoonPorter;
 import dev.moonlight.moonporter.config.MoonPorterConfig;
 import dev.moonlight.moonporter.config.PorterTier;
+import dev.moonlight.moonporter.config.type.CargoVisualType;
 import dev.moonlight.moonporter.service.MessageService;
 import org.bukkit.Material;
 import org.bukkit.entity.FallingBlock;
@@ -13,16 +15,21 @@ import java.util.Map;
 /**
  * Создаёт груз и его визуализацию.
  *
- * Здесь же находится единственное место, где спавнится сущность, —
+ * Здесь же находится единственное место, где спавнятся сущности, —
  * при переходе на пакетную визуализацию меняется только этот класс.
+ * Тип визуализации выбирается в settings.cargo.visual: HANDS требует
+ * ядро 1.19.4+, на старых ядрах автоматически применяется HEAD.
  */
 public final class CargoVisualFactory {
 
+    private final MoonPorter plugin;
     private final MoonPorterConfig config;
     private final MessageService messageService;
 
-    public CargoVisualFactory(@NotNull MoonPorterConfig config,
+    public CargoVisualFactory(@NotNull MoonPorter plugin,
+                              @NotNull MoonPorterConfig config,
                               @NotNull MessageService messageService) {
+        this.plugin = plugin;
         this.config = config;
         this.messageService = messageService;
     }
@@ -62,6 +69,30 @@ public final class CargoVisualFactory {
      */
     public @NotNull CargoVisual spawn(@NotNull Player player, @NotNull Cargo cargo) {
 
+        if (config.getCargoVisualType() == CargoVisualType.HANDS) {
+
+            try {
+
+                BlockDisplayVisual visual = new BlockDisplayVisual(
+                        plugin,
+                        player,
+                        cargo,
+                        config.getHandsForward(),
+                        config.getHandsDown()
+                );
+
+                visual.attach(player);
+
+                return visual;
+
+            } catch (Throwable throwable) {
+
+                plugin.getLogger().warning("Визуализация HANDS недоступна на этом ядре — "
+                        + "груз будет отображаться над головой.");
+
+            }
+        }
+
         FallingBlock fallingBlock = player.getWorld().spawnFallingBlock(
                 player.getLocation(),
                 cargo.material().createBlockData()
@@ -69,7 +100,7 @@ public final class CargoVisualFactory {
 
         fallingBlock.setCustomName(cargo.displayName());
 
-        FallingBlockVisual visual = new FallingBlockVisual(fallingBlock);
+        FallingBlockVisual visual = new FallingBlockVisual(fallingBlock, config.isCargoNameVisible());
 
         visual.attach(player);
 

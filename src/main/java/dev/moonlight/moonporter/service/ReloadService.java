@@ -47,9 +47,9 @@ public final class ReloadService {
         messageService.sendString(sender, configManager.getReloadSuccessMessage(),
                 Map.of("count", cancelled));
 
-        configManager.describe().forEach(line ->
-                messageService.sendString(sender, configManager.getReloadEntryFormat(),
-                        Map.of("line", line)));
+        messageService.sendLines(sender,
+                configManager.getReloadReportMessage(),
+                configManager.describeValues());
 
     }
 }

@@ -3,6 +3,16 @@
 settings:
   enabled: true # Full on/off switch of the plugin
   material: BARREL # Cargo block material shown above the player
+  cargo:
+    visual: HEAD # HEAD — cargo rides above the head (any core 1.16+).
+    # HANDS — block display held in front of the player (core 1.19.4+, falls back to HEAD)
+    name_visible: true # Show the cargo name above the entity
+    hands_offset: # Tuning of the HANDS visual
+      forward: 0.55 # Distance in front of the player (in blocks)
+      down: 0.45 # Drop from the eye level (in blocks)
+  violations:
+    reset_flight: true # Turn flight off on violation; false — only take the cargo away
+    reset_gamemode: true # Force survival on violation; false — only take the cargo away
   title:
     enabled: true # Show titles at all
     fade_in: 20 # Title fade-in time (in ticks)
@@ -101,8 +111,20 @@ messages:
   command:
     no_permission: "&cYou don't have permission for this command."
     player_only: "&cThis command is available to players only."
+    no_tiers: "&cNo cargo levels are configured."
     reload_success: "&aConfiguration reloaded. Cancelled deliveries: &e{count}"
-    reload_entry: " &7• &f{line}" # Format of a single report line
+    reload_report:
+      - ""
+      - " &7enabled: &f{enabled}"
+      - " &7material: &f{material}"
+      - " &7npc ids: &f{npc_ids}"
+      - " &7worlds: &f{worlds}"
+      - " &7regions: &f{regions}"
+      - " &7porters: &f{porters}"
+      - " &7delivery: &f{delivery}"
+      - " &7cooldown: &f{cooldown}"
+      - " &7permissions: &f{permissions}"
+      - ""
     usage:
       - ""
       - " &e/{label} reload &7— reload the configuration"

@@ -20,7 +20,7 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
 
         <!-- Версии сверены с maven-metadata репозиториев 19.09.2026 -->
-        <spigot.version>1.16.5-R0.1-SNAPSHOT</spigot.version>
+        <spigot.version>1.19.4-R0.1-SNAPSHOT</spigot.version>
         <vault.version>1.7.1</vault.version>
         <citizens.version>2.0.30-SNAPSHOT</citizens.version>
         <worldguard.version>7.0.5</worldguard.version>

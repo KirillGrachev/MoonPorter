@@ -1,5 +1,6 @@
 package dev.moonlight.moonporter.config;
 
+import dev.moonlight.moonporter.config.type.CargoVisualType;
 import dev.moonlight.moonporter.config.type.DeliveryTrigger;
 import dev.moonlight.moonporter.config.type.TitleType;
 import org.bukkit.Material;
@@ -18,6 +19,22 @@ public interface MoonPorterConfig {
     boolean isEnabled();
 
     @NotNull Material getMaterial();
+
+    /* Груз */
+
+    @NotNull CargoVisualType getCargoVisualType();
+
+    boolean isCargoNameVisible();
+
+    double getHandsForward();
+
+    double getHandsDown();
+
+    /* Нарушения */
+
+    boolean isResetFlightEnabled();
+
+    boolean isResetGamemodeEnabled();
 
     /** Титулы */
     boolean isTitleEnabled();
@@ -80,7 +97,9 @@ public interface MoonPorterConfig {
 
     @NotNull String getReloadSuccessMessage();
 
-    @NotNull String getReloadEntryFormat();
+    @NotNull String getCommandNoTiersMessage();
+
+    @NotNull List<String> getReloadReportMessage();
 
     /** Управление */
     void reload();

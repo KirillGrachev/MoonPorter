@@ -63,7 +63,7 @@ public final class MoonPorterCommand implements TabExecutor {
 
             case ARG_RELOAD -> reload(sender);
 
-            case ARG_GIVE -> giveCargo(sender, args);
+            case ARG_GIVE -> giveCargo(sender, label, args);
 
             default -> messageService.sendLines(sender, config.getCommandUsageMessage(), usagePlaceholders(label));
 
@@ -119,9 +119,12 @@ public final class MoonPorterCommand implements TabExecutor {
      * Выдаёт груз игроку в обход NPC.
      *
      * @param sender отправитель команды
+     * @param label  имя команды, которым её вызвали
      * @param args   аргументы команды
      */
-    private void giveCargo(@NotNull CommandSender sender, String @NotNull [] args) {
+    private void giveCargo(@NotNull CommandSender sender,
+                           @NotNull String label,
+                           String @NotNull [] args) {
 
         if (!hasPermission(sender)) {
             return;
@@ -134,9 +137,23 @@ public final class MoonPorterCommand implements TabExecutor {
 
         }
 
+        if (tierRegistry.size() == 0) {
+
+            messageService.sendString(sender, config.getCommandNoTiersMessage());
+            return;
+
+        }
+
         PorterTier tier = resolveTier(args);
 
-        porterService.pickup(player, tier != null ? tier : tierRegistry.getRandomTier());
+        if (tier == null) {
+
+            messageService.sendLines(sender, config.getCommandUsageMessage(), usagePlaceholders(label));
+            return;
+
+        }
+
+        porterService.pickup(player, tier);
 
     }
 
@@ -144,12 +161,12 @@ public final class MoonPorterCommand implements TabExecutor {
      * Разбирает уровень груза из аргумента команды.
      *
      * @param args аргументы команды
-     * @return уровень из реестра либо null, если ключ не найден
+     * @return уровень из реестра, случайный без аргумента либо null, если ключ не найден
      */
     private @Nullable PorterTier resolveTier(String @NotNull [] args) {
 
         if (args.length < 2) {
-            return null;
+            return tierRegistry.getRandomTier();
         }
 
         return tierRegistry.getTier(args[1]);

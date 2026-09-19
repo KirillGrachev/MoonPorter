@@ -17,8 +17,9 @@ import java.util.concurrent.ThreadLocalRandom;
  * Реестр уровней груза.
  *
  * Уровни читаются из settings.porters конфига в порядке объявления.
- * Если секция отсутствует или пуста, регистрируется встроенный набор
- * по умолчанию (low, normal, large) — плагин работоспособен без настройки.
+ * Встроенных текстов в коде нет: если секция пуста, реестр остаётся
+ * пустым, выдача груза отключается, а ConfigManager пишет об этом
+ * warning в консоль при разборе конфигурации.
  */
 public final class PorterTierRegistry {
 
@@ -31,29 +32,7 @@ public final class PorterTierRegistry {
     }
 
     private void initializeTiers() {
-
-        List<PorterTier> configured = config.getPorterTiers();
-
-        if (configured.isEmpty()) {
-
-            registerDefaultTiers();
-            return;
-
-        }
-
-        configured.forEach(tier -> tiers.put(tier.id(), tier));
-
-    }
-
-    /**
-     * Встроенный набор уровней: повторяет значения оригинального плагина.
-     */
-    private void registerDefaultTiers() {
-
-        tiers.put("low", new PorterTier("low", "&eBarrel with weight {weight}", 5, 10, 1));
-        tiers.put("normal", new PorterTier("normal", "&6Barrel with weight {weight}", 10, 25, 2));
-        tiers.put("large", new PorterTier("large", "&cBarrel with weight {weight}", 25, 40, 3));
-
+        config.getPorterTiers().forEach(tier -> tiers.put(tier.id(), tier));
     }
 
     /**
@@ -88,11 +67,15 @@ public final class PorterTierRegistry {
      * Возвращает случайный зарегистрированный уровень.
      * Общий экземпляр ThreadLocalRandom вместо new Random() на каждый вызов.
      *
-     * @return случайный уровень
+     * @return случайный уровень либо null, если реестр пуст
      */
-    public @NotNull PorterTier getRandomTier() {
+    public @Nullable PorterTier getRandomTier() {
 
         List<PorterTier> values = List.copyOf(tiers.values());
+
+        if (values.isEmpty()) {
+            return null;
+        }
 
         return values.get(ThreadLocalRandom.current().nextInt(values.size()));
 
