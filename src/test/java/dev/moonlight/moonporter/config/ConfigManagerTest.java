@@ -33,11 +33,11 @@ class ConfigManagerTest {
         assertEquals(7, config.getTitleFadeOut());
 
         assertEquals(DeliveryTrigger.SNEAK_HOLD, config.getDeliveryTrigger());
-        assertEquals(42, config.getDeliveryTimeout());
-        assertEquals(3.5D, config.getDeliveryRadius());
+        assertEquals(42_000L, config.getDeliveryTimeoutMillis());
+        assertEquals(12.25D, config.getDeliveryRadiusSquared());
 
         assertTrue(config.isCooldownEnabled());
-        assertEquals(45, config.getCooldownTime());
+        assertEquals(45_000L, config.getCooldownMillis());
 
     }
 
@@ -54,6 +54,8 @@ class ConfigManagerTest {
 
         assertEquals(List.of(45, 46), config.getNpcIds());
         assertEquals(List.of("test_world"), config.getAllowedWorlds());
+        assertTrue(config.isAllowedWorld("test_world"));
+        assertFalse(config.isAllowedWorld("world"));
         assertEquals(List.of("test_region"), config.getAllowedRegions());
 
     }
@@ -134,20 +136,20 @@ class ConfigManagerTest {
 
         assertEquals(CargoVisualType.HEAD, config.getCargoVisualType());
         assertTrue(config.isCargoNameVisible());
-        assertEquals(0.55D, config.getHandsForward());
-        assertEquals(0.45D, config.getHandsDown());
+        assertEquals(0.50D, config.getHandsForward());
+        assertEquals(1.15D, config.getHandsHeight());
         assertTrue(config.isResetFlightEnabled());
         assertTrue(config.isResetGamemodeEnabled());
 
         assertEquals(DeliveryTrigger.SNEAK_TOGGLE, config.getDeliveryTrigger());
-        assertEquals(15, config.getDeliveryTimeout());
-        assertEquals(0.0D, config.getDeliveryRadius());
+        assertEquals(15_000L, config.getDeliveryTimeoutMillis());
+        assertEquals(0.0D, config.getDeliveryRadiusSquared());
 
         // пустой конфиг: отчёта нет, в консоль уходит warning об отсутствующей секции
         assertTrue(config.getReloadReportMessage().isEmpty());
 
         assertFalse(config.isCooldownEnabled());
-        assertEquals(30, config.getCooldownTime());
+        assertEquals(30_000L, config.getCooldownMillis());
 
         assertFalse(config.arePermissionsEnabled());
         assertEquals("moonporter.admin", config.getPermissionAdmin());

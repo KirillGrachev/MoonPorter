@@ -28,7 +28,7 @@ public interface MoonPorterConfig {
 
     double getHandsForward();
 
-    double getHandsDown();
+    double getHandsHeight();
 
     /* Нарушения */
 
@@ -48,14 +48,23 @@ public interface MoonPorterConfig {
     /** Доставка */
     @NotNull DeliveryTrigger getDeliveryTrigger();
 
-    int getDeliveryTimeout();
+    long getDeliveryTimeoutMillis();
 
-    double getDeliveryRadius();
+    double getDeliveryRadiusSquared();
+
+    /**
+     * Проверяет мир по белому списку settings.allowed_worlds.
+     * Поиск по кэшированному множеству, O(1).
+     *
+     * @param worldName имя мира
+     * @return true если переноска в мире разрешена
+     */
+    boolean isAllowedWorld(@NotNull String worldName);
 
     /** Кулдаун */
     boolean isCooldownEnabled();
 
-    int getCooldownTime();
+    long getCooldownMillis();
 
     /** Права */
     boolean arePermissionsEnabled();

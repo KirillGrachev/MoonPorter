@@ -22,15 +22,16 @@ public record Cargo(@NotNull Material material,
 
     /**
      * Проверяет, находится ли игрок в радиусе сдачи от точки выдачи.
-     * Сравнение идёт по квадратам расстояний — без извлечения корня.
+     * Принимает уже возведённый в квадрат радиус: сравнение с
+     * distanceSquared не извлекает корень в горячем пути.
      *
-     * @param player проверяемый игрок
-     * @param radius радиус в блоках, 0 отключает проверку
+     * @param player        проверяемый игрок
+     * @param radiusSquared квадрат радиуса в блоках, 0 отключает проверку
      * @return true если проверка пройдена
      */
-    public boolean isWithinRadius(@NotNull Player player, double radius) {
+    public boolean isWithinRadius(@NotNull Player player, double radiusSquared) {
 
-        if (radius <= 0.0D || origin == null) {
+        if (radiusSquared <= 0.0D || origin == null) {
             return true;
         }
 
@@ -44,7 +45,7 @@ public record Cargo(@NotNull Material material,
             return false;
         }
 
-        return current.distanceSquared(origin) <= radius * radius;
+        return current.distanceSquared(origin) <= radiusSquared;
 
     }
 }

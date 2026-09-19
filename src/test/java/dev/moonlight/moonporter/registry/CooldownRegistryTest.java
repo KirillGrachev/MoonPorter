@@ -37,7 +37,7 @@ class CooldownRegistryTest {
     @DisplayName("Задержка нулевой длительности не назначается")
     void ignoresZeroDuration() {
 
-        registry.start(PLAYER_ID, 0);
+        registry.start(PLAYER_ID, 0L);
 
         assertFalse(registry.isActive(PLAYER_ID));
 
@@ -47,7 +47,7 @@ class CooldownRegistryTest {
     @DisplayName("Назначенная задержка активна и показывает остаток")
     void tracksActiveCooldown() {
 
-        registry.start(PLAYER_ID, 10);
+        registry.start(PLAYER_ID, 10_000L);
 
         assertTrue(registry.isActive(PLAYER_ID));
         assertTrue(registry.getRemainingSeconds(PLAYER_ID) > 0L);
@@ -59,7 +59,7 @@ class CooldownRegistryTest {
     @DisplayName("Удаление снимает задержку")
     void removesCooldown() {
 
-        registry.start(PLAYER_ID, 10);
+        registry.start(PLAYER_ID, 10_000L);
         registry.remove(PLAYER_ID);
 
         assertFalse(registry.isActive(PLAYER_ID));
@@ -70,7 +70,7 @@ class CooldownRegistryTest {
     @DisplayName("Очистка снимает все задержки")
     void clearsAllCooldowns() {
 
-        registry.start(PLAYER_ID, 10);
+        registry.start(PLAYER_ID, 10_000L);
         registry.clear();
 
         assertFalse(registry.isActive(PLAYER_ID));

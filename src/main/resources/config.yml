@@ -8,8 +8,8 @@ settings:
     # HANDS — block display held in front of the player (core 1.19.4+, falls back to HEAD)
     name_visible: true # Show the cargo name above the entity
     hands_offset: # Tuning of the HANDS visual
-      forward: 0.55 # Distance in front of the player (in blocks)
-      down: 0.45 # Drop from the eye level (in blocks)
+      forward: 0.50 # Distance in front of the chest (in blocks)
+      height: 1.15 # Block center height above the player's feet (in blocks)
   violations:
     reset_flight: true # Turn flight off on violation; false — only take the cargo away
     reset_gamemode: true # Force survival on violation; false — only take the cargo away

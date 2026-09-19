@@ -18,15 +18,15 @@ public final class CooldownRegistry {
      * Назначает игроку задержку.
      *
      * @param playerId UUID игрока
-     * @param seconds  длительность в секундах
+     * @param millis   длительность в миллисекундах, уже из конфигурации
      */
-    public void start(@NotNull UUID playerId, int seconds) {
+    public void start(@NotNull UUID playerId, long millis) {
 
-        if (seconds <= 0) {
+        if (millis <= 0L) {
             return;
         }
 
-        expirations.put(playerId, System.currentTimeMillis() + seconds * 1000L);
+        expirations.put(playerId, System.currentTimeMillis() + millis);
 
     }
 

@@ -1,7 +1,6 @@
 package dev.moonlight.moonporter.porter.cargo;
 
 import dev.moonlight.moonporter.MoonPorter;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.BlockDisplay;
 import org.bukkit.entity.Player;
@@ -10,15 +9,19 @@ import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.UUID;
-
 /**
- * Груз в руках: BlockDisplay без физики, который следует перед игроком
- * на высоте рук. Точка удержания настраивается в settings.cargo.hands_offset.
+ * Груз в двух руках: BlockDisplay без физики, стоящий по центру перед
+ * грудью игрока, как будто игрок обхватил его руками.
+ *
+ * Позиция строится от корпуса, а не от взгляда: горизонтальное смещение
+ * считается по yaw тела, высота фиксирована над ногами, поэтому груз
+ * не взлетает и не падает при поворотах головы и не уводится в бок.
+ * Точка удерживается в settings.cargo.hands_offset.
  *
  * Позиция обновляется каждый тик телепортом без интерполяции:
- * сглаживание дисплея давало видимый лаг на поворотах (груз уводило
- * в бок от прежнего направления взгляда), поэтому от него отказались.
+ * сглаживание дисплея давало видимый лаг на поворотах.
+ * Ссылка на носителя хранится напрямую: груз живёт меньше сессии,
+ * а поиск игрока по UUID каждый тик был лишней работой для карты.
  * Таск живёт только пока жив груз. Требует ядро 1.19.4+:
  * на старых ядрах фабрика вернёт FallingBlockVisual.
  */
@@ -28,9 +31,9 @@ public final class BlockDisplayVisual implements CargoVisual {
 
     private final MoonPorter plugin;
     private final BlockDisplay display;
-    private final UUID carrierId;
+    private final Player carrier;
     private final double forward;
-    private final double down;
+    private final double height;
 
     private @Nullable BukkitTask task;
 
@@ -38,12 +41,12 @@ public final class BlockDisplayVisual implements CargoVisual {
                               @NotNull Player player,
                               @NotNull Cargo cargo,
                               double forward,
-                              double down) {
+                              double height) {
 
         this.plugin = plugin;
-        this.carrierId = player.getUniqueId();
+        this.carrier = player;
         this.forward = forward;
-        this.down = down;
+        this.height = height;
 
         this.display = player.getWorld().spawn(player.getLocation(), BlockDisplay.class);
 
@@ -90,21 +93,22 @@ public final class BlockDisplayVisual implements CargoVisual {
     }
 
     /**
-     * Ставит дисплей перед игроком на высоте рук.
-     * Направление взгляда учитывается: груз идёт туда, куда смотрит игрок.
+     * Ставит груз по центру перед корпусом носителя.
+     * Горизонталь — по yaw тела, высота — фиксировано над ногами:
+     * модель обхвата двумя руками, независимая от направления взгляда.
      */
     private void follow() {
 
-        Player player = Bukkit.getPlayer(carrierId);
-
-        if (player == null || !player.isOnline()) {
+        if (!carrier.isOnline()) {
             return;
         }
 
-        Location hands = player.getEyeLocation();
+        Location hands = carrier.getLocation();
+        double yaw = Math.toRadians(hands.getYaw());
 
-        hands.add(hands.getDirection().multiply(forward));
-        hands.setY(hands.getY() - down);
+        hands.setX(hands.getX() - Math.sin(yaw) * forward);
+        hands.setZ(hands.getZ() - Math.cos(yaw) * forward);
+        hands.setY(hands.getY() + height);
 
         display.teleport(hands);
 

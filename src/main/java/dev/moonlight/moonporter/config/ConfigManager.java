@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -40,7 +41,7 @@ public final class ConfigManager implements MoonPorterConfig {
     private static final String PATH_CARGO_VISUAL = "settings.cargo.visual";
     private static final String PATH_CARGO_NAME_VISIBLE = "settings.cargo.name_visible";
     private static final String PATH_HANDS_FORWARD = "settings.cargo.hands_offset.forward";
-    private static final String PATH_HANDS_DOWN = "settings.cargo.hands_offset.down";
+    private static final String PATH_HANDS_HEIGHT = "settings.cargo.hands_offset.height";
     private static final String PATH_RESET_FLIGHT = "settings.violations.reset_flight";
     private static final String PATH_RESET_GAMEMODE = "settings.violations.reset_gamemode";
     private static final String PATH_TITLE_ENABLED = "settings.title.enabled";
@@ -74,7 +75,7 @@ public final class ConfigManager implements MoonPorterConfig {
     private CargoVisualType cargoVisualType;
     private boolean cargoNameVisible;
     private double handsForward;
-    private double handsDown;
+    private double handsHeight;
     private boolean resetFlight;
     private boolean resetGamemode;
     private boolean titleEnabled;
@@ -82,16 +83,17 @@ public final class ConfigManager implements MoonPorterConfig {
     private int titleStay;
     private int titleFadeOut;
     private DeliveryTrigger deliveryTrigger;
-    private int deliveryTimeout;
-    private double deliveryRadius;
+    private long deliveryTimeoutMillis;
+    private double deliveryRadiusSquared;
     private boolean cooldownEnabled;
-    private int cooldownTime;
+    private long cooldownMillis;
     private boolean permissionsEnabled;
     private String permissionAdmin;
     private String permissionUse;
     private String permissionBypassCooldown;
     private List<Integer> npcIds;
     private List<String> allowedWorlds;
+    private Set<String> allowedWorldSet;
     private List<String> allowedRegions;
     private List<PorterTier> porterTiers;
     private String prefix;
@@ -160,8 +162,8 @@ public final class ConfigManager implements MoonPorterConfig {
 
         cargoVisualType = readEnum(PATH_CARGO_VISUAL, CargoVisualType.class, CargoVisualType.HEAD);
         cargoNameVisible = config.getBoolean(PATH_CARGO_NAME_VISIBLE, true);
-        handsForward = config.getDouble(PATH_HANDS_FORWARD, 0.55D);
-        handsDown = config.getDouble(PATH_HANDS_DOWN, 0.45D);
+        handsForward = config.getDouble(PATH_HANDS_FORWARD, 0.50D);
+        handsHeight = config.getDouble(PATH_HANDS_HEIGHT, 1.15D);
 
         resetFlight = config.getBoolean(PATH_RESET_FLIGHT, true);
         resetGamemode = config.getBoolean(PATH_RESET_GAMEMODE, true);
@@ -172,11 +174,13 @@ public final class ConfigManager implements MoonPorterConfig {
         titleFadeOut = config.getInt(PATH_TITLE_FADE_OUT, 20);
 
         deliveryTrigger = readEnum(PATH_DELIVERY_TRIGGER, DeliveryTrigger.class, DeliveryTrigger.SNEAK_TOGGLE);
-        deliveryTimeout = Math.max(1, config.getInt(PATH_DELIVERY_TIMEOUT, 15));
-        deliveryRadius = config.getDouble(PATH_DELIVERY_RADIUS, 0.0D);
+        // Единицы и квадрат радиуса кэшируются сразу: в горячем пути
+        // (выдача, сдача, тик наблюдателя) не остаётся арифметики.
+        deliveryTimeoutMillis = Math.max(1, config.getInt(PATH_DELIVERY_TIMEOUT, 15)) * 1000L;
+        deliveryRadiusSquared = square(config.getDouble(PATH_DELIVERY_RADIUS, 0.0D));
 
         cooldownEnabled = config.getBoolean(PATH_COOLDOWN_ENABLED, false);
-        cooldownTime = Math.max(0, config.getInt(PATH_COOLDOWN_TIME, 30));
+        cooldownMillis = Math.max(0, config.getInt(PATH_COOLDOWN_TIME, 30)) * 1000L;
 
         permissionsEnabled = config.getBoolean(PATH_PERMISSIONS_ENABLED, false);
         permissionAdmin = config.getString(PATH_PERMISSION_ADMIN, "moonporter.admin");
@@ -185,6 +189,7 @@ public final class ConfigManager implements MoonPorterConfig {
 
         npcIds = readNpcIds();
         allowedWorlds = readStringList(PATH_ALLOWED_WORLDS);
+        allowedWorldSet = Set.copyOf(allowedWorlds);
         allowedRegions = readStringList(PATH_ALLOWED_REGIONS);
 
         prefix = HexColorUtil.color(config.getString(PATH_PREFIX, ""));
@@ -228,6 +233,23 @@ public final class ConfigManager implements MoonPorterConfig {
         }
 
         return resolved;
+
+    }
+
+    /**
+     * Возводит радиус в квадрат: проверки расстояний работают
+     * с distanceSquared и не извлекают корень каждый раз.
+     *
+     * @param radius радиус в блоках
+     * @return квадрат радиуса
+     */
+    private static double square(double radius) {
+
+        if (radius <= 0.0D) {
+            return 0.0D;
+        }
+
+        return radius * radius;
 
     }
 
@@ -455,8 +477,8 @@ public final class ConfigManager implements MoonPorterConfig {
     }
 
     @Override
-    public double getHandsDown() {
-        return handsDown;
+    public double getHandsHeight() {
+        return handsHeight;
     }
 
     @Override
@@ -495,13 +517,18 @@ public final class ConfigManager implements MoonPorterConfig {
     }
 
     @Override
-    public int getDeliveryTimeout() {
-        return deliveryTimeout;
+    public long getDeliveryTimeoutMillis() {
+        return deliveryTimeoutMillis;
     }
 
     @Override
-    public double getDeliveryRadius() {
-        return deliveryRadius;
+    public double getDeliveryRadiusSquared() {
+        return deliveryRadiusSquared;
+    }
+
+    @Override
+    public boolean isAllowedWorld(@NotNull String worldName) {
+        return allowedWorldSet.contains(worldName);
     }
 
     @Override
@@ -510,8 +537,8 @@ public final class ConfigManager implements MoonPorterConfig {
     }
 
     @Override
-    public int getCooldownTime() {
-        return cooldownTime;
+    public long getCooldownMillis() {
+        return cooldownMillis;
     }
 
     @Override
@@ -624,8 +651,8 @@ public final class ConfigManager implements MoonPorterConfig {
         values.put("porters", porterTiers.stream()
                 .map(PorterTier::id)
                 .collect(Collectors.joining(", ")));
-        values.put("delivery", deliveryTrigger.name() + ", timeout " + deliveryTimeout + "s");
-        values.put("cooldown", cooldownEnabled ? cooldownTime + "s" : "off");
+        values.put("delivery", deliveryTrigger.name() + ", timeout " + deliveryTimeoutMillis / 1000L + "s");
+        values.put("cooldown", cooldownEnabled ? cooldownMillis / 1000L + "s" : "off");
         values.put("permissions", permissionsEnabled ? "on" : "off");
 
         return Collections.unmodifiableMap(values);

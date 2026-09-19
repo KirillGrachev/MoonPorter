@@ -103,7 +103,7 @@ public final class PorterService {
             return;
         }
 
-        if (!isAllowedWorld(player)) {
+        if (!config.isAllowedWorld(player.getWorld().getName())) {
 
             messageService.sendTitle(player, TitleType.PICKUP_WRONG_WORLD);
             return;
@@ -141,20 +141,20 @@ public final class PorterService {
 
         attachWeightEffect(player, tier.weight());
 
-        long expiresAt = System.currentTimeMillis() + config.getDeliveryTimeout() * 1000L;
+        long expiresAt = System.currentTimeMillis() + config.getDeliveryTimeoutMillis();
 
         porterRegistry.start(new DeliverySession(playerId, cargo, visual, expiresAt));
         watchdog.ensureRunning();
 
         if (config.isCooldownEnabled() && !cooldownService.isBypassed(player)) {
-            cooldownRegistry.start(playerId, config.getCooldownTime());
+            cooldownRegistry.start(playerId, config.getCooldownMillis());
         }
 
         messageService.sendTitle(player, TitleType.PICKUP_SUCCESS, Map.of(
                 "player", player.getName(),
                 "tier", tier.id(),
                 "weight", tier.weight(),
-                "seconds", config.getDeliveryTimeout()
+                "seconds", config.getDeliveryTimeoutMillis() / 1000L
         ));
 
     }
@@ -176,7 +176,7 @@ public final class PorterService {
             return;
         }
 
-        if (!isAllowedWorld(player)) {
+        if (!config.isAllowedWorld(player.getWorld().getName())) {
 
             denyDelivery(player, TitleType.DELIVERY_WRONG_WORLD);
             return;
@@ -323,16 +323,6 @@ public final class PorterService {
     }
 
     /**
-     * Проверяет мир игрока по белому списку.
-     *
-     * @param player игрок
-     * @return true если мир разрешён
-     */
-    private boolean isAllowedWorld(@NotNull Player player) {
-        return config.getAllowedWorlds().contains(player.getWorld().getName());
-    }
-
-    /**
      * Проверяет задержку между переносками.
      *
      * @param playerId UUID игрока
@@ -357,7 +347,7 @@ public final class PorterService {
      */
     private boolean isAllowedDeliveryPoint(@NotNull Player player, @NotNull Cargo cargo) {
 
-        if (!cargo.isWithinRadius(player, config.getDeliveryRadius())) {
+        if (!cargo.isWithinRadius(player, config.getDeliveryRadiusSquared())) {
             return false;
         }
 

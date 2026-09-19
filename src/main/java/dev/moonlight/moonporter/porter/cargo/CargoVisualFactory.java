@@ -78,7 +78,7 @@ public final class CargoVisualFactory {
                         player,
                         cargo,
                         config.getHandsForward(),
-                        config.getHandsDown()
+                        config.getHandsHeight()
                 );
 
                 visual.attach(player);
