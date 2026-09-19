@@ -7,6 +7,7 @@ import dev.moonlight.moonporter.config.type.CancelReason;
 import dev.moonlight.moonporter.event.EventDispatcher;
 import dev.moonlight.moonporter.hook.HookRegistrar;
 import dev.moonlight.moonporter.hook.VaultEconomyHook;
+import dev.moonlight.moonporter.listener.CargoProtectListener;
 import dev.moonlight.moonporter.listener.PorterStateListener;
 import dev.moonlight.moonporter.porter.DeliveryWatchdog;
 import dev.moonlight.moonporter.registry.CooldownRegistry;
@@ -84,7 +85,8 @@ public final class MoonPorter extends JavaPlugin {
 
         // Регистрация слушателей
         new EventDispatcher(this).registerEvents(
-                new PorterStateListener(configManager, porterService, messageService, cargoItemService)
+                new PorterStateListener(configManager, porterService, cargoItemService),
+                new CargoProtectListener(cargoItemService, messageService)
         );
 
         // Регистрация команд

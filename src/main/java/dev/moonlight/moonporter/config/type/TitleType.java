@@ -18,8 +18,8 @@ public enum TitleType {
     /** В инвентаре нет свободного слота под груз */
     PICKUP_NO_SPACE("pickup.no_space"),
 
-    /** Груз нельзя выбросить */
-    DROP_DENIED("drop.denied"),
+    /** Груз защищён пломбой: нельзя двигать, выбрасывать, ставить */
+    CARGO_PROTECTED("cargo.protected"),
 
     /** Груз успешно сдан */
     DELIVERY_SUCCESS("delivery.success"),

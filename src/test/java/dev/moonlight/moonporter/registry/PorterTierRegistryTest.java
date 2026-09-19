@@ -6,7 +6,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -27,7 +26,7 @@ class PorterTierRegistryTest {
         assertEquals(0, registry.size());
         assertNull(registry.getTier("low"));
         assertNull(registry.getRandomTier());
-        assertFalse(registry.isRegistered("low"));
+        assertNull(registry.getTier("low"));
 
     }
 
@@ -39,8 +38,8 @@ class PorterTierRegistryTest {
         PorterTierRegistry registry = new PorterTierRegistry(config);
 
         assertEquals(2, registry.size());
-        assertTrue(registry.isRegistered("test_low"));
-        assertTrue(registry.isRegistered("test_high"));
+        assertNotNull(registry.getTier("test_low"));
+        assertNotNull(registry.getTier("test_high"));
 
         assertNotNull(registry.getTier("test_low"));
         assertEquals(1, registry.getTier("test_low").rewardMin());
@@ -66,7 +65,7 @@ class PorterTierRegistryTest {
         PorterTierRegistry registry = new PorterTierRegistry(TestConfigs.load("/test-config.yml"));
 
         for (int i = 0; i < 200; i++) {
-            assertTrue(registry.isRegistered(registry.getRandomTier().id()));
+            assertNotNull(registry.getTier(registry.getRandomTier().id()));
         }
 
     }

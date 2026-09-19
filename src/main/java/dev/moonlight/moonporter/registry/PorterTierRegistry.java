@@ -54,16 +54,6 @@ public final class PorterTierRegistry {
     }
 
     /**
-     * Проверяет наличие уровня в реестре.
-     *
-     * @param id ключ секции уровня
-     * @return true если уровень зарегистрирован
-     */
-    public boolean isRegistered(@NotNull String id) {
-        return tiers.containsKey(id.toLowerCase(Locale.ROOT));
-    }
-
-    /**
      * Возвращает случайный зарегистрированный уровень.
      * Общий экземпляр ThreadLocalRandom вместо new Random() на каждый вызов.
      *

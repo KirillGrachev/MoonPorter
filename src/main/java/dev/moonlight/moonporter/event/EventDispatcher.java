@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Регистрация слушателей событий плагина.
  */
-public class EventDispatcher {
+public final class EventDispatcher {
 
     private final MoonPorter plugin;
 

@@ -75,10 +75,6 @@ public final class CooldownRegistry {
 
     }
 
-    public void remove(@NotNull UUID playerId) {
-        expirations.remove(playerId);
-    }
-
     public void clear() {
         expirations.clear();
     }

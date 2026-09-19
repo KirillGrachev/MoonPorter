@@ -73,11 +73,11 @@ messages:
       title: "&cError!"
       subtitle: "&fNo free slot for the cargo"
 
-  drop:
-    denied:
+  cargo:
+    protected:
       enabled: true
       title: "&cError!"
-      subtitle: "&fYou cannot drop the cargo"
+      subtitle: "&fThe cargo cannot be moved, dropped or placed"
 
   delivery:
     success:

@@ -56,17 +56,6 @@ class CooldownRegistryTest {
     }
 
     @Test
-    @DisplayName("Удаление снимает задержку")
-    void removesCooldown() {
-
-        registry.start(PLAYER_ID, 10_000L);
-        registry.remove(PLAYER_ID);
-
-        assertFalse(registry.isActive(PLAYER_ID));
-
-    }
-
-    @Test
     @DisplayName("Очистка снимает все задержки")
     void clearsAllCooldowns() {
 
