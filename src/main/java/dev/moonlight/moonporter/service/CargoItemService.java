@@ -23,9 +23,11 @@ import java.util.Arrays;
 public final class CargoItemService {
 
     private final NamespacedKey cargoKey;
+    private final NamespacedKey cargoIdKey;
 
     public CargoItemService(@NotNull MoonPorter plugin) {
         this.cargoKey = new NamespacedKey(plugin, "cargo");
+        this.cargoIdKey = new NamespacedKey(plugin, "cargo_id");
     }
 
     /**
@@ -43,6 +45,7 @@ public final class CargoItemService {
 
             meta.setDisplayName(cargo.displayName());
             meta.getPersistentDataContainer().set(cargoKey, PersistentDataType.BYTE, (byte) 1);
+            meta.getPersistentDataContainer().set(cargoIdKey, PersistentDataType.STRING, cargo.id().toString());
             item.setItemMeta(meta);
 
         }
@@ -71,7 +74,41 @@ public final class CargoItemService {
     }
 
     /**
-     * Проверяет, лежит ли груз в инвентаре игрока.
+     * Читает уникальный идентификатор груза из предмета.
+     *
+     * @param item проверяемый предмет
+     * @return id груза либо null, если предмет не груз
+     */
+    public @Nullable String getCargoId(@Nullable ItemStack item) {
+
+        if (!isCargoItem(item)) {
+            return null;
+        }
+
+        ItemMeta meta = item.getItemMeta();
+
+        return meta == null
+                ? null
+                : meta.getPersistentDataContainer().get(cargoIdKey, PersistentDataType.STRING);
+
+    }
+
+    /**
+     * Проверяет, лежит ли груз с конкретным id в инвентаре игрока.
+     *
+     * @param player проверяемый игрок
+     * @param cargoId идентификатор экземпляра груза
+     * @return true если найден именно этот груз
+     */
+    public boolean hasCargoItem(@NotNull Player player, @NotNull String cargoId) {
+
+        return Arrays.stream(player.getInventory().getStorageContents())
+                .anyMatch(stack -> cargoId.equals(getCargoId(stack)));
+
+    }
+
+    /**
+     * Проверяет, лежит ли какой-либо груз в инвентаре игрока.
      *
      * @param player проверяемый игрок
      * @return true если предмет груза найден
@@ -81,6 +118,26 @@ public final class CargoItemService {
         return Arrays.stream(player.getInventory().getStorageContents())
                 .anyMatch(this::isCargoItem);
 
+    }
+
+    /**
+     * Убирает из инвентаря груз с конкретным id.
+     *
+     * @param player  игрок
+     * @param cargoId идентификатор экземпляра груза
+     */
+    public void removeById(@NotNull Player player, @NotNull String cargoId) {
+
+        PlayerInventory inventory = player.getInventory();
+        ItemStack[] contents = inventory.getStorageContents();
+
+        for (int slot = 0; slot < contents.length; slot++) {
+
+            if (cargoId.equals(getCargoId(contents[slot]))) {
+                inventory.setItem(slot, null);
+            }
+
+        }
     }
 
     /**

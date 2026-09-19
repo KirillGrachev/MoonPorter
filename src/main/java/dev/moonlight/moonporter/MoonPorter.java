@@ -15,6 +15,7 @@ import dev.moonlight.moonporter.registry.PorterRegistry;
 import dev.moonlight.moonporter.registry.PorterTierRegistry;
 import dev.moonlight.moonporter.service.CargoItemService;
 import dev.moonlight.moonporter.service.CooldownService;
+import dev.moonlight.moonporter.service.DeliveryBossBarService;
 import dev.moonlight.moonporter.service.EconomyService;
 import dev.moonlight.moonporter.service.MessageService;
 import dev.moonlight.moonporter.service.PermissionService;
@@ -55,11 +56,12 @@ public final class MoonPorter extends JavaPlugin {
         PermissionService permissionService = new PermissionService(configManager);
         CooldownService cooldownService = new CooldownService(configManager, permissionService);
         CargoItemService cargoItemService = new CargoItemService(this);
+        DeliveryBossBarService bossBarService = new DeliveryBossBarService(this, configManager, messageService);
 
         // Watchdog и HookRegistrar создаются до PorterService,
         // потому что сами нужны ему в конструкторе. Обратная ссылка
         // проставляется через bind() сразу после создания сервиса.
-        this.deliveryWatchdog = new DeliveryWatchdog(this, porterRegistry, configManager);
+        this.deliveryWatchdog = new DeliveryWatchdog(this, porterRegistry, configManager, bossBarService);
 
         HookRegistrar hookRegistrar = new HookRegistrar(this);
         RegionProvider regionProvider = hookRegistrar.resolveRegionProvider();
@@ -75,7 +77,8 @@ public final class MoonPorter extends JavaPlugin {
                 economyService,
                 regionProvider,
                 cooldownService,
-                permissionService
+                permissionService,
+                bossBarService
         );
 
         ReloadService reloadService = new ReloadService(configManager, tierRegistry, porterService, messageService);

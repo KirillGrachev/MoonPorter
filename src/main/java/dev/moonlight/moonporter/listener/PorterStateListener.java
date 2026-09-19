@@ -11,6 +11,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
@@ -71,6 +72,21 @@ public final class PorterStateListener implements Listener {
         }
 
         porterService.deliver(player);
+
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onJoin(@NotNull PlayerJoinEvent event) {
+
+        Player player = event.getPlayer();
+
+        if (porterService.isCarrying(player) || !cargoItemService.hasCargoItem(player)) {
+            return;
+        }
+
+        // Предмет пережил свою сессию (reload или рестарт во время офлайна):
+        // без зачистки его можно сдать вне учета или задюпать
+        cargoItemService.removeAll(player);
 
     }
 

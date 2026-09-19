@@ -4,6 +4,7 @@ import dev.moonlight.moonporter.config.type.CargoMode;
 import dev.moonlight.moonporter.config.type.DeliveryTrigger;
 import dev.moonlight.moonporter.config.type.TitleType;
 import org.bukkit.Material;
+import org.bukkit.boss.BarColor;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -56,6 +57,14 @@ public interface MoonPorterConfig {
      * @return true если переноска в мире разрешена
      */
     boolean isAllowedWorld(@NotNull String worldName);
+
+    /* BossBar таймера */
+
+    boolean isBossBarEnabled();
+
+    @NotNull BarColor getBossBarColor();
+
+    @NotNull String getBossBarText();
 
     /** Кулдаун */
     boolean isCooldownEnabled();

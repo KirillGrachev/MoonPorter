@@ -21,7 +21,7 @@ commands:
 permissions:
   moonporter.admin:
     description: Access to the MoonPorter admin commands
-    default: op
+    default: false
   moonporter.use:
     description: Ability to pick up and deliver cargo (used when settings.permissions.enabled)
     default: true

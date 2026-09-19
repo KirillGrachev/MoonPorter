@@ -4,6 +4,7 @@ import dev.moonlight.moonporter.MoonPorter;
 import dev.moonlight.moonporter.config.MoonPorterConfig;
 import dev.moonlight.moonporter.config.type.CancelReason;
 import dev.moonlight.moonporter.registry.PorterRegistry;
+import dev.moonlight.moonporter.service.DeliveryBossBarService;
 import dev.moonlight.moonporter.service.PorterService;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -28,16 +29,19 @@ public final class DeliveryWatchdog {
     private final MoonPorter plugin;
     private final PorterRegistry registry;
     private final MoonPorterConfig config;
+    private final DeliveryBossBarService bossBarService;
 
     private @Nullable PorterService porterService;
     private @Nullable BukkitTask task;
 
     public DeliveryWatchdog(@NotNull MoonPorter plugin,
                             @NotNull PorterRegistry registry,
-                            @NotNull MoonPorterConfig config) {
+                            @NotNull MoonPorterConfig config,
+                            @NotNull DeliveryBossBarService bossBarService) {
         this.plugin = plugin;
         this.registry = registry;
         this.config = config;
+        this.bossBarService = bossBarService;
     }
 
     /**
@@ -103,6 +107,8 @@ public final class DeliveryWatchdog {
             if (player == null || !player.isOnline()) {
                 continue;
             }
+
+            bossBarService.update(player, session, now);
 
             CancelReason reason = detectViolation(player, session, now);
 

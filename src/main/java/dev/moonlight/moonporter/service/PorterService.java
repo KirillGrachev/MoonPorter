@@ -52,6 +52,7 @@ public final class PorterService {
     private final RegionProvider regionProvider;
     private final CooldownService cooldownService;
     private final PermissionService permissionService;
+    private final DeliveryBossBarService bossBarService;
 
     public PorterService(@NotNull MoonPorterConfig config,
                          @NotNull PorterRegistry porterRegistry,
@@ -63,7 +64,8 @@ public final class PorterService {
                          @NotNull EconomyService economyService,
                          @NotNull RegionProvider regionProvider,
                          @NotNull CooldownService cooldownService,
-                         @NotNull PermissionService permissionService) {
+                         @NotNull PermissionService permissionService,
+                         @NotNull DeliveryBossBarService bossBarService) {
         this.config = config;
         this.porterRegistry = porterRegistry;
         this.tierRegistry = tierRegistry;
@@ -75,6 +77,7 @@ public final class PorterService {
         this.regionProvider = regionProvider;
         this.cooldownService = cooldownService;
         this.permissionService = permissionService;
+        this.bossBarService = bossBarService;
     }
 
     /**
@@ -149,6 +152,7 @@ public final class PorterService {
         }
 
         Cargo cargo = new Cargo(
+                UUID.randomUUID(),
                 config.getMaterial(),
                 tier,
                 messageService.applyPlaceholders(tier.name(), Map.of(
@@ -171,8 +175,11 @@ public final class PorterService {
 
         long expiresAt = System.currentTimeMillis() + config.getDeliveryTimeoutMillis();
 
-        porterRegistry.start(new DeliverySession(playerId, cargo, visual, expiresAt));
+        DeliverySession session = new DeliverySession(playerId, cargo, visual, expiresAt);
+
+        porterRegistry.start(session);
         watchdog.ensureRunning();
+        bossBarService.show(player, session);
 
         if (config.isCooldownEnabled() && !cooldownService.isBypassed(player)) {
             cooldownRegistry.start(playerId, config.getCooldownMillis());
@@ -218,7 +225,8 @@ public final class PorterService {
 
         }
 
-        if (config.getCargoMode().hasInventory() && !cargoItemService.hasCargoItem(player)) {
+        if (config.getCargoMode().hasInventory()
+                && !cargoItemService.hasCargoItem(player, session.cargo().id().toString())) {
 
             cancel(player, CancelReason.CARGO_LOST);
             return;
@@ -265,9 +273,10 @@ public final class PorterService {
         lastDenyWarnings.remove(player.getUniqueId());
 
         session.visual().remove();
+        bossBarService.hide(player);
 
         if (config.getCargoMode().hasInventory()) {
-            cargoItemService.removeAll(player);
+            cargoItemService.removeById(player, session.cargo().id().toString());
         }
 
         removeWeightEffect(player);
@@ -288,17 +297,29 @@ public final class PorterService {
 
         List<DeliverySession> sessions = porterRegistry.snapshot();
 
+        boolean inventoryMode = config.getCargoMode().hasInventory();
+
         for (DeliverySession session : sessions) {
 
             session.visual().remove();
 
             Player player = Bukkit.getPlayer(session.playerId());
 
-            if (player != null && player.isOnline()) {
-                removeWeightEffect(player);
+            if (player == null || !player.isOnline()) {
+                continue;
             }
 
+            bossBarService.hide(player);
+
+            if (inventoryMode) {
+                cargoItemService.removeById(player, session.cargo().id().toString());
+            }
+
+            removeWeightEffect(player);
+
         }
+
+        bossBarService.hideAll();
 
         porterRegistry.clear();
         cooldownRegistry.clear();
@@ -306,6 +327,16 @@ public final class PorterService {
 
         return sessions.size();
 
+    }
+
+    /**
+     * Несёт ли игрок груз прямо сейчас.
+     *
+     * @param player проверяемый игрок
+     * @return true если есть активная сессия
+     */
+    public boolean isCarrying(@NotNull Player player) {
+        return porterRegistry.isCarrying(player);
     }
 
     /**

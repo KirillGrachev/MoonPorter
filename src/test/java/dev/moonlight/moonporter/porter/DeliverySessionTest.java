@@ -58,7 +58,7 @@ class DeliverySessionTest {
 
         return new DeliverySession(
                 UUID.randomUUID(),
-                new Cargo(Material.BARREL, TEST_TIER, "Груз", null),
+                new Cargo(UUID.randomUUID(), Material.BARREL, TEST_TIER, "Груз", null),
                 new FallingBlockVisual(null),
                 expiresAt
         );

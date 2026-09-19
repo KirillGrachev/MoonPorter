@@ -7,6 +7,7 @@ import dev.moonlight.moonporter.config.type.TitleType;
 import dev.moonlight.moonporter.util.HexColorUtil;
 import dev.moonlight.moonporter.util.RangeUtil;
 import org.bukkit.Material;
+import org.bukkit.boss.BarColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -49,6 +50,9 @@ public final class ConfigManager implements MoonPorterConfig {
     private static final String PATH_DELIVERY_TRIGGER = "settings.delivery.trigger";
     private static final String PATH_DELIVERY_TIMEOUT = "settings.delivery.timeout";
     private static final String PATH_DELIVERY_RADIUS = "settings.delivery.radius";
+    private static final String PATH_BOSSBAR_ENABLED = "settings.delivery.bossbar.enabled";
+    private static final String PATH_BOSSBAR_COLOR = "settings.delivery.bossbar.color";
+    private static final String PATH_BOSSBAR_TEXT = "settings.delivery.bossbar.text";
     private static final String PATH_COOLDOWN_ENABLED = "settings.cooldown.enabled";
     private static final String PATH_COOLDOWN_TIME = "settings.cooldown.time";
     private static final String PATH_PERMISSIONS_ENABLED = "settings.permissions.enabled";
@@ -82,6 +86,9 @@ public final class ConfigManager implements MoonPorterConfig {
     private DeliveryTrigger deliveryTrigger;
     private long deliveryTimeoutMillis;
     private double deliveryRadiusSquared;
+    private boolean bossBarEnabled;
+    private BarColor bossBarColor;
+    private String bossBarText;
     private boolean cooldownEnabled;
     private long cooldownMillis;
     private boolean permissionsEnabled;
@@ -174,6 +181,10 @@ public final class ConfigManager implements MoonPorterConfig {
         // (выдача, сдача, тик наблюдателя) не остаётся арифметики.
         deliveryTimeoutMillis = Math.max(1, config.getInt(PATH_DELIVERY_TIMEOUT, 15)) * 1000L;
         deliveryRadiusSquared = square(config.getDouble(PATH_DELIVERY_RADIUS, 0.0D));
+
+        bossBarEnabled = config.getBoolean(PATH_BOSSBAR_ENABLED, true);
+        bossBarColor = readEnum(PATH_BOSSBAR_COLOR, BarColor.class, BarColor.YELLOW);
+        bossBarText = config.getString(PATH_BOSSBAR_TEXT, "&eDelivery: &f{seconds}s &7left");
 
         cooldownEnabled = config.getBoolean(PATH_COOLDOWN_ENABLED, false);
         cooldownMillis = Math.max(0, config.getInt(PATH_COOLDOWN_TIME, 30)) * 1000L;
@@ -511,6 +522,21 @@ public final class ConfigManager implements MoonPorterConfig {
     @Override
     public double getDeliveryRadiusSquared() {
         return deliveryRadiusSquared;
+    }
+
+    @Override
+    public boolean isBossBarEnabled() {
+        return bossBarEnabled;
+    }
+
+    @Override
+    public @NotNull BarColor getBossBarColor() {
+        return bossBarColor;
+    }
+
+    @Override
+    public @NotNull String getBossBarText() {
+        return bossBarText;
     }
 
     @Override

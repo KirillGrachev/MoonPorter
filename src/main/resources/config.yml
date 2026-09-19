@@ -1,4 +1,4 @@
-# Placeholders: {prefix}, {player}, {tier}, {weight}, {seconds}, {amount}, {label}, {tiers}, {regions}, {count}
+# Placeholders: {prefix}, {player}, {tier}, {weight}, {seconds}, {amount}, {label}, {tiers}, {regions}, {count}, {cargo}
 
 settings:
   enabled: true # Full on/off switch of the plugin
@@ -21,12 +21,16 @@ settings:
     # SNEAK_HOLD — deliver while Shift is held (checked on block change)
     timeout: 15 # Delivery time limit (in seconds)
     radius: 0.0 # Delivery radius from the pickup point (in blocks), 0 — no check
+    bossbar:
+      enabled: true # Show a boss bar with the delivery timer
+      color: YELLOW # PINK, BLUE, RED, GREEN, YELLOW, PURPLE, WHITE
+      text: "&eDelivery: &f{seconds}s &7left" # Placeholders: {seconds}, {cargo}, {player}
   cooldown:
     enabled: false # Delay between deliveries
     time: 30 # Cooldown duration (in seconds)
   permissions:
     enabled: false # Enable permission system (admin, use, bypass_cooldown)
-    op_bypass: false # OP players and console ignore permission checks (use, bypass_cooldown, admin)
+    op_bypass: false # OP players ignore permission checks (use, bypass_cooldown, admin); console always has access
     admin: "moonporter.admin"
     use: "moonporter.use"
     bypass_cooldown: "moonporter.bypass.cooldown"
