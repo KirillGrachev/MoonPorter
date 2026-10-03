@@ -121,10 +121,8 @@ public final class MessageService {
         for (String line : lines) {
 
             if (line.isEmpty()) {
-
                 sender.sendMessage("");
                 continue;
-
             }
 
             sender.sendMessage(PlaceholderUtil.apply(line, values));
@@ -142,7 +140,6 @@ public final class MessageService {
     private @NotNull Map<String, ?> prefixPlaceholders(@Nullable Map<String, ?> placeholders) {
 
         Map<String, Object> values = new HashMap<>();
-
         values.put("prefix", config.getPrefix());
 
         if (placeholders != null) {

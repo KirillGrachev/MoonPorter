@@ -110,24 +110,18 @@ public final class PorterService {
         }
 
         if (!config.isAllowedWorld(player.getWorld().getName())) {
-
             messageService.sendTitle(player, TitleType.PICKUP_WRONG_WORLD);
             return;
-
         }
 
         if (porterRegistry.isCarrying(player)) {
-
             messageService.sendTitle(player, TitleType.PICKUP_DENIED);
             return;
-
         }
 
         if (!permissionService.hasUse(player)) {
-
             messageService.sendTitle(player, TitleType.NO_PERMISSION);
             return;
-
         }
 
         UUID playerId = player.getUniqueId();
@@ -145,10 +139,8 @@ public final class PorterService {
         CargoMode mode = config.getCargoMode();
 
         if (mode.hasInventory() && !cargoItemService.hasFreeSlot(player)) {
-
             messageService.sendTitle(player, TitleType.PICKUP_NO_SPACE);
             return;
-
         }
 
         Cargo cargo = new Cargo(
@@ -172,9 +164,7 @@ public final class PorterService {
                 : new FallingBlockVisual(null);
 
         attachWeightEffect(player, tier.weight());
-
         long expiresAt = System.currentTimeMillis() + config.getDeliveryTimeoutMillis();
-
         DeliverySession session = new DeliverySession(playerId, cargo, visual, expiresAt);
 
         porterRegistry.start(session);
@@ -212,29 +202,22 @@ public final class PorterService {
         }
 
         if (!config.isAllowedWorld(player.getWorld().getName())) {
-
             denyDelivery(player, TitleType.DELIVERY_WRONG_WORLD);
             return;
-
         }
 
         if (!isAllowedDeliveryPoint(player, session.cargo())) {
-
             denyDelivery(player, TitleType.DELIVERY_WRONG_POINT);
             return;
-
         }
 
         if (config.getCargoMode().hasInventory()
                 && !cargoItemService.hasCargoItem(player, session.cargo().id().toString())) {
-
             cancel(player, CancelReason.CARGO_LOST);
             return;
-
         }
 
         int reward = resolveReward(session.cargo());
-
         economyService.deposit(player, reward);
 
         cancel(player, CancelReason.DELIVERED, Map.of(
@@ -296,13 +279,11 @@ public final class PorterService {
     public int cancelAll() {
 
         List<DeliverySession> sessions = porterRegistry.snapshot();
-
         boolean inventoryMode = config.getCargoMode().hasInventory();
 
         for (DeliverySession session : sessions) {
 
             session.visual().remove();
-
             Player player = Bukkit.getPlayer(session.playerId());
 
             if (player == null || !player.isOnline()) {

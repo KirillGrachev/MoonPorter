@@ -52,7 +52,6 @@ public final class DeliveryBossBarService {
         }
 
         hide(player);
-
         long now = System.currentTimeMillis();
         UUID playerId = player.getUniqueId();
 
@@ -132,14 +131,11 @@ public final class DeliveryBossBarService {
      * @return окрашенный текст с плейсхолдерами
      */
     private @NotNull String title(@NotNull Player player, @NotNull DeliverySession session, long now) {
-
         long seconds = (Math.max(0L, session.expiresAt() - now) + 999L) / 1000L;
-
         return messageService.applyPlaceholders(config.getBossBarText(), Map.of(
                 "seconds", seconds,
                 "cargo", session.cargo().displayName(),
                 "player", player.getName()
         ));
-
     }
 }

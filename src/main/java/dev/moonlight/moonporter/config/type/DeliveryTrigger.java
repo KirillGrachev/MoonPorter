@@ -10,4 +10,5 @@ public enum DeliveryTrigger {
 
     /** Сдача при удержании Shift: проверяется при переходе игрока между блоками */
     SNEAK_HOLD
+
 }

@@ -67,7 +67,6 @@ public final class CargoItemService {
         }
 
         ItemMeta meta = item.getItemMeta();
-
         return meta != null
                 && meta.getPersistentDataContainer().has(cargoKey, PersistentDataType.BYTE);
 
@@ -86,7 +85,6 @@ public final class CargoItemService {
         }
 
         ItemMeta meta = item.getItemMeta();
-
         return meta == null
                 ? null
                 : meta.getPersistentDataContainer().get(cargoIdKey, PersistentDataType.STRING);
@@ -101,10 +99,8 @@ public final class CargoItemService {
      * @return true если найден именно этот груз
      */
     public boolean hasCargoItem(@NotNull Player player, @NotNull String cargoId) {
-
         return Arrays.stream(player.getInventory().getStorageContents())
                 .anyMatch(stack -> cargoId.equals(getCargoId(stack)));
-
     }
 
     /**
@@ -114,10 +110,8 @@ public final class CargoItemService {
      * @return true если предмет груза найден
      */
     public boolean hasCargoItem(@NotNull Player player) {
-
         return Arrays.stream(player.getInventory().getStorageContents())
                 .anyMatch(this::isCargoItem);
-
     }
 
     /**
@@ -132,11 +126,9 @@ public final class CargoItemService {
         ItemStack[] contents = inventory.getStorageContents();
 
         for (int slot = 0; slot < contents.length; slot++) {
-
             if (cargoId.equals(getCargoId(contents[slot]))) {
                 inventory.setItem(slot, null);
             }
-
         }
     }
 
@@ -171,11 +163,9 @@ public final class CargoItemService {
         ItemStack[] contents = inventory.getStorageContents();
 
         for (int slot = 0; slot < contents.length; slot++) {
-
             if (isCargoItem(contents[slot])) {
                 inventory.setItem(slot, null);
             }
-
         }
     }
 }

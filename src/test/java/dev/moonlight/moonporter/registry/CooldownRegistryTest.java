@@ -27,20 +27,15 @@ class CooldownRegistryTest {
     @Test
     @DisplayName("Пустой реестр не содержит задержек")
     void isEmptyByDefault() {
-
         assertFalse(registry.isActive(PLAYER_ID));
         assertEquals(0L, registry.getRemainingSeconds(PLAYER_ID));
-
     }
 
     @Test
     @DisplayName("Задержка нулевой длительности не назначается")
     void ignoresZeroDuration() {
-
         registry.start(PLAYER_ID, 0L);
-
         assertFalse(registry.isActive(PLAYER_ID));
-
     }
 
     @Test

@@ -55,22 +55,16 @@ public final class MoonPorterCommand implements TabExecutor {
                              String @NotNull [] args) {
 
         if (args.length == 0) {
-
             messageService.sendLines(sender, config.getCommandUsageMessage(), usagePlaceholders(label));
             return true;
-
         }
 
         String subCommand = args[0].toLowerCase(Locale.ROOT);
 
         switch (subCommand) {
-
             case ARG_RELOAD -> reload(sender);
-
             case ARG_GIVE -> giveCargo(sender, label, args);
-
             default -> messageService.sendLines(sender, config.getCommandUsageMessage(), usagePlaceholders(label));
-
         }
 
         return true;
@@ -78,10 +72,10 @@ public final class MoonPorterCommand implements TabExecutor {
     }
 
     @Override
-    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender,
-                                                @NotNull Command command,
-                                                @NotNull String alias,
-                                                String @NotNull [] args) {
+    public @NotNull List<String> onTabComplete(@NotNull CommandSender sender,
+                                               @NotNull Command command,
+                                               @NotNull String alias,
+                                               String @NotNull [] args) {
 
         if (args.length == 1) {
 
@@ -135,26 +129,20 @@ public final class MoonPorterCommand implements TabExecutor {
         }
 
         if (!(sender instanceof Player player)) {
-
             messageService.sendString(sender, config.getCommandPlayerOnlyMessage());
             return;
-
         }
 
         if (tierRegistry.size() == 0) {
-
             messageService.sendString(sender, config.getCommandNoTiersMessage());
             return;
-
         }
 
         PorterTier tier = resolveTier(args);
 
         if (tier == null) {
-
             messageService.sendLines(sender, config.getCommandUsageMessage(), usagePlaceholders(label));
             return;
-
         }
 
         porterService.pickup(player, tier);
@@ -211,13 +199,11 @@ public final class MoonPorterCommand implements TabExecutor {
      * @return карта плейсхолдеров
      */
     private @NotNull Map<String, ?> usagePlaceholders(@NotNull String label) {
-
         return Map.of(
                 "label", label,
                 "tiers", String.join(", ", tierRegistry.getTierIds()),
                 "regions", String.join(", ", config.getAllowedRegions())
         );
-
     }
 
     /**
@@ -228,12 +214,9 @@ public final class MoonPorterCommand implements TabExecutor {
      * @return отфильтрованный список
      */
     public static @NotNull List<String> filter(@NotNull List<String> values, @NotNull String token) {
-
         String lowerToken = token.toLowerCase(Locale.ROOT);
-
         return values.stream()
                 .filter(value -> value.toLowerCase(Locale.ROOT).startsWith(lowerToken))
                 .toList();
-
     }
 }

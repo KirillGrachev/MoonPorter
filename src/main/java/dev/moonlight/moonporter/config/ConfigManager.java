@@ -142,11 +142,9 @@ public final class ConfigManager implements MoonPorterConfig {
     }
 
     private void saveDefaultConfig() {
-
         if (plugin != null) {
             plugin.saveDefaultConfig();
         }
-
     }
 
     private void loadConfig() {
@@ -211,10 +209,8 @@ public final class ConfigManager implements MoonPorterConfig {
         reloadReportMessage = readColoredList(PATH_RELOAD_REPORT);
 
         if (reloadReportMessage.isEmpty()) {
-
             logger.warning("Сообщение '" + PATH_RELOAD_REPORT + "' не найдено или пусто — "
                     + "отчёт перезагрузки показываться не будет.");
-
         }
 
         cachePorterTiers();
@@ -230,14 +226,11 @@ public final class ConfigManager implements MoonPorterConfig {
     private @NotNull Material readMaterial() {
 
         String raw = config.getString(PATH_MATERIAL, Material.BARREL.name());
-
         Material resolved = Material.matchMaterial(raw);
 
         if (resolved == null || !resolved.isBlock()) {
-
             logger.warning("Invalid settings.material: '" + raw + "'. Using BARREL.");
             return Material.BARREL;
-
         }
 
         return resolved;
@@ -279,12 +272,10 @@ public final class ConfigManager implements MoonPorterConfig {
     }
 
     private @NotNull List<String> readStringList(@NotNull String path) {
-
         return config.getStringList(path).stream()
                 .map(String::trim)
                 .filter(value -> !value.isEmpty())
                 .collect(Collectors.toUnmodifiableList());
-
     }
 
     /**
@@ -294,11 +285,9 @@ public final class ConfigManager implements MoonPorterConfig {
      * @return неизменяемый список окрашенных строк
      */
     private @NotNull List<String> readColoredList(@NotNull String path) {
-
         return config.getStringList(path).stream()
                 .map(HexColorUtil::color)
                 .collect(Collectors.toUnmodifiableList());
-
     }
 
     /**
@@ -314,11 +303,9 @@ public final class ConfigManager implements MoonPorterConfig {
         String raw = config.getString(path);
 
         if (raw == null || raw.isEmpty()) {
-
             logger.warning("Сообщение '" + path + "' не найдено в config.yml — "
                     + "отправляться не будет.");
             return "";
-
         }
 
         return HexColorUtil.color(raw);
@@ -332,7 +319,6 @@ public final class ConfigManager implements MoonPorterConfig {
     private void cachePorterTiers() {
 
         List<PorterTier> tiers = new ArrayList<>();
-
         ConfigurationSection root = config.getConfigurationSection(PATH_PORTERS);
 
         if (root != null) {
@@ -340,10 +326,7 @@ public final class ConfigManager implements MoonPorterConfig {
             for (String id : root.getKeys(false)) {
 
                 ConfigurationSection section = root.getConfigurationSection(id);
-
-                if (section == null) {
-                    continue;
-                }
+                if (section == null) continue;
 
                 tiers.add(readPorterTier(id.toLowerCase(Locale.ROOT), section));
 
@@ -351,10 +334,8 @@ public final class ConfigManager implements MoonPorterConfig {
         }
 
         if (tiers.isEmpty()) {
-
             logger.warning("Секция '" + PATH_PORTERS + "' не найдена или пуста — "
                     + "уровней груза нет, выдача груза отключена до исправления конфигурации.");
-
         }
 
         porterTiers = Collections.unmodifiableList(tiers);
@@ -374,31 +355,25 @@ public final class ConfigManager implements MoonPorterConfig {
         String rawName = section.getString("name");
 
         if (rawName == null || rawName.isBlank()) {
-
             logger.warning("В секции '" + PATH_PORTERS + "." + id
                     + "' нет name — именем уровня будет его ключ.");
             rawName = id;
-
         }
 
         String name = HexColorUtil.color(rawName);
 
         String rawReward = section.getString("reward", "0-0");
-
         Optional<int[]> reward = RangeUtil.parse(rawReward);
 
         if (reward.isEmpty()) {
-
             logger.warning("Invalid reward format for tier '" + id + "': '" + rawReward
                     + "'. Expected \"min-max\".");
-
         }
 
         int rewardMin = reward.map(range -> range[0]).orElse(0);
         int rewardMax = reward.map(range -> range[1]).orElse(0);
 
         int weight = Math.max(0, Math.min(section.getInt("weight", 1), 10));
-
         return new PorterTier(id, name, rewardMin, rewardMax, weight);
 
     }
@@ -417,6 +392,7 @@ public final class ConfigManager implements MoonPorterConfig {
                 logger.warning("Секция сообщений '" + path
                         + "' не найдена в config.yml — титул отправляться не будет.");
                 titles.put(type, TitleMessage.empty());
+
                 continue;
 
             }
@@ -426,15 +402,14 @@ public final class ConfigManager implements MoonPorterConfig {
             String subtitle = HexColorUtil.color(section.getString("subtitle", ""));
 
             if (enabled && title.isEmpty() && subtitle.isEmpty()) {
-
                 logger.warning("В секции сообщений '" + path
                         + "' пустые title и subtitle — титул отправляться не будет.");
-
             }
 
             titles.put(type, new TitleMessage(enabled, title, subtitle));
 
         }
+
     }
 
     private <T extends Enum<T>> @NotNull T readEnum(@NotNull String path,
@@ -448,15 +423,12 @@ public final class ConfigManager implements MoonPorterConfig {
         }
 
         try {
-
             return Enum.valueOf(type, raw.trim().toUpperCase(Locale.ROOT));
-
         } catch (IllegalArgumentException exception) {
-
             logger.warning("Invalid value of '" + path + "': '" + raw + "'. Using " + def.name() + ".");
             return def;
-
         }
+
     }
 
     @Override

@@ -85,10 +85,7 @@ class PorterTierRegistryTest {
     @Test
     @DisplayName("Неизвестный ключ возвращает null")
     void returnsNullForUnknownTier() {
-
         PorterTierRegistry registry = new PorterTierRegistry(TestConfigs.load("/test-config.yml"));
-
         assertNull(registry.getTier("nope"));
-
     }
 }

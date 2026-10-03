@@ -68,9 +68,7 @@ class ConfigManagerTest {
         MoonPorterConfig config = TestConfigs.load("/test-config.yml");
 
         List<PorterTier> tiers = config.getPorterTiers();
-
         assertEquals(2, tiers.size());
-
         PorterTier low = tiers.get(0);
 
         assertEquals("test_low", low.id());
@@ -108,7 +106,6 @@ class ConfigManagerTest {
 
         // отчёт перезагрузки — список строк из конфига с плейсхолдерами
         assertEquals(1, config.getReloadReportMessage().size());
-
         TitleMessage success = config.getTitle(TitleType.PICKUP_SUCCESS);
 
         assertTrue(success.enabled());

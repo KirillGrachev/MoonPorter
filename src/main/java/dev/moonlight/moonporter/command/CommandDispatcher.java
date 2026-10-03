@@ -27,10 +27,8 @@ public final class CommandDispatcher {
         PluginCommand pluginCommand = plugin.getCommand(command);
 
         if (pluginCommand == null) {
-
             plugin.getLogger().warning("Команда '" + command + "' не найдена в plugin.yml.");
             return;
-
         }
 
         pluginCommand.setExecutor(executor);

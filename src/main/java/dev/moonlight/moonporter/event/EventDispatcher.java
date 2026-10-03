@@ -18,10 +18,8 @@ public final class EventDispatcher {
     }
 
     public void registerEvents(Listener @NotNull ... listeners) {
-
         for (Listener listener : listeners) {
             Bukkit.getPluginManager().registerEvents(listener, plugin);
         }
-
     }
 }

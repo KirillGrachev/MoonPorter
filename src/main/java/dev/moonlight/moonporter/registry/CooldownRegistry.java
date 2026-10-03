@@ -45,10 +45,8 @@ public final class CooldownRegistry {
         }
 
         if (expiresAt <= System.currentTimeMillis()) {
-
             expirations.remove(playerId, expiresAt);
             return false;
-
         }
 
         return true;
@@ -70,7 +68,6 @@ public final class CooldownRegistry {
         }
 
         long remaining = expiresAt - System.currentTimeMillis();
-
         return remaining <= 0L ? 0L : (long) Math.ceil(remaining / 1000.0D);
 
     }

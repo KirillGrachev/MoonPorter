@@ -100,18 +100,14 @@ public final class MoonPorter extends JavaPlugin {
         );
 
         hookRegistrar.registerCitizens();
-
         if (!economyService.isAvailable()) {
-
             getLogger().warning("Vault или плагин экономики не найдены — "
                     + "награда за груз выдаваться не будет.");
-
         }
 
         getLogger().info("Регионы: " + configManager.getAllowedRegions()
                 + " (провайдер: " + regionProvider.getName() + ")"
                 + ", NPC: " + configManager.getNpcIds());
-
         getLogger().info("MoonPorter успешно запущен!");
 
     }
@@ -138,7 +134,6 @@ public final class MoonPorter extends JavaPlugin {
         }
 
         getServer().getScheduler().cancelTasks(this);
-
         getLogger().info("MoonPorter остановлен!");
 
     }
@@ -161,14 +156,10 @@ public final class MoonPorter extends JavaPlugin {
         }
 
         try {
-
             return VaultEconomyHook.attach(this);
-
         } catch (Throwable throwable) {
-
             getLogger().warning("Не удалось подключить Vault: " + throwable.getMessage());
             return null;
-
         }
     }
 

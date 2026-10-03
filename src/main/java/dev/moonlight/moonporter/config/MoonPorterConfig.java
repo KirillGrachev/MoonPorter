@@ -21,13 +21,9 @@ public interface MoonPorterConfig {
 
     @NotNull Material getMaterial();
 
-    /* Груз */
-
     @NotNull CargoMode getCargoMode();
 
     boolean isCargoNameVisible();
-
-    /* Нарушения */
 
     boolean isResetFlightEnabled();
 
@@ -57,8 +53,6 @@ public interface MoonPorterConfig {
      * @return true если переноска в мире разрешена
      */
     boolean isAllowedWorld(@NotNull String worldName);
-
-    /* BossBar таймера */
 
     boolean isBossBarEnabled();
 
@@ -124,4 +118,5 @@ public interface MoonPorterConfig {
 
     /** Управление */
     void reload();
+
 }

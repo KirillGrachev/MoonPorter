@@ -57,7 +57,6 @@ public final class VaultEconomyHook {
         }
 
         EconomyResponse response = economy.depositPlayer(player, amount);
-
         return response != null && response.transactionSuccess();
 
     }

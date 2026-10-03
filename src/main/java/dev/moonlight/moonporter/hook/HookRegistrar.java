@@ -48,32 +48,25 @@ public final class HookRegistrar {
     public boolean registerCitizens() {
 
         if (porterService == null) {
-
             plugin.getLogger().warning("Citizens не подключён: сервис переноски не инициализирован.");
             return false;
-
         }
 
         if (!isPluginEnabled("Citizens")) {
-
             plugin.getLogger().warning("Citizens не найден — выдача груза через NPC отключена. "
                     + "Груз можно выдать командой /moonporter give "
                     + "или вызовом PorterService#pickup из другого плагина.");
             return false;
-
         }
 
         try {
-
             new CitizensHook(plugin, porterService).register();
             return true;
-
         } catch (Throwable throwable) {
-
             plugin.getLogger().warning("Не удалось подключить Citizens: " + throwable.getMessage());
             return false;
-
         }
+
     }
 
     /**
@@ -85,24 +78,18 @@ public final class HookRegistrar {
     public @NotNull RegionProvider resolveRegionProvider() {
 
         if (!isPluginEnabled("WorldGuard")) {
-
             plugin.getLogger().warning("WorldGuard не найден — регионы из config.yml не проверяются, "
                     + "груз можно сдать в любом месте разрешённого мира.");
-
             return new DefaultRegionProvider();
-
         }
 
         try {
-
             return new WorldGuardRegionProvider();
-
         } catch (Throwable throwable) {
-
             plugin.getLogger().warning("Не удалось подключить WorldGuard: " + throwable.getMessage());
             return new DefaultRegionProvider();
-
         }
+
     }
 
     /**

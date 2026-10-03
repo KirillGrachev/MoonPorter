@@ -91,10 +91,8 @@ public final class CargoProtectListener implements Listener {
         }
 
         if (isCargoInvolved(event, player)) {
-
             deny(player);
             event.setCancelled(true);
-
         }
     }
 
@@ -183,13 +181,11 @@ public final class CargoProtectListener implements Listener {
         }
 
         Block block = event.getClickedBlock();
-
         if (block == null || !CONSUMING_BLOCKS.contains(block.getType())) {
             return;
         }
 
         Player player = event.getPlayer();
-
         if (!cargoItemService.isCargoItem(handItem(player, event.getHand()))) {
             return;
         }
@@ -220,10 +216,8 @@ public final class CargoProtectListener implements Listener {
         }
 
         if (event.getClick() == ClickType.NUMBER_KEY) {
-
             ItemStack hotbarItem = player.getInventory().getItem(event.getHotbarButton());
             return cargoItemService.isCargoItem(hotbarItem);
-
         }
 
         // Двойной клик собирает stacks того же материала и утащил бы груз в курсор
@@ -240,11 +234,9 @@ public final class CargoProtectListener implements Listener {
      * @return предмет руки либо null
      */
     private @Nullable ItemStack handItem(@NotNull Player player, @NotNull EquipmentSlot hand) {
-
         return hand == EquipmentSlot.HAND
                 ? player.getInventory().getItemInMainHand()
                 : player.getInventory().getItemInOffHand();
-
     }
 
     /**

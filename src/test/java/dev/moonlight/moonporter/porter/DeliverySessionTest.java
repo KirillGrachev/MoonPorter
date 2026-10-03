@@ -55,13 +55,11 @@ class DeliverySessionTest {
     }
 
     private @NotNull DeliverySession session(long expiresAt) {
-
         return new DeliverySession(
                 UUID.randomUUID(),
                 new Cargo(UUID.randomUUID(), Material.BARREL, TEST_TIER, "Груз", null),
                 new FallingBlockVisual(null),
                 expiresAt
         );
-
     }
 }

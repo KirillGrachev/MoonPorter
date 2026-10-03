@@ -29,4 +29,5 @@ public interface RegionProvider {
      * @return true если точка попадает в один из регионов
      */
     boolean isInAnyRegion(@NotNull Location location, @NotNull List<String> regions);
+
 }

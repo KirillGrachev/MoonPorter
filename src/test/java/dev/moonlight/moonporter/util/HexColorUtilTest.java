@@ -18,11 +18,13 @@ class HexColorUtilTest {
     @Test
     @DisplayName("Преобразует HEX-код в legacy-формат &x&R&R&G&G&B&B")
     void convertsHexCode() {
+
         String result = HexColorUtil.color("#ff0000Груз");
 
         assertTrue(result.contains("&xff0000") || result.contains("\u00A7x\u00A7f\u00A7f\u00A70\u00A70\u00A70"),
                 "HEX-код не преобразован: " + result);
         assertTrue(result.endsWith("Груз"));
+
     }
 
     @Test
@@ -40,9 +42,11 @@ class HexColorUtilTest {
     @Test
     @DisplayName("Обрабатывает несколько HEX-кодов в одной строке")
     void convertsSeveralHexCodes() {
+
         String result = HexColorUtil.color("#ff0000A#00ff00B");
 
         assertTrue(result.contains("A"));
         assertTrue(result.endsWith("B"));
+
     }
 }

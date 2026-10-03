@@ -62,7 +62,6 @@ public final class PorterStateListener implements Listener {
         }
 
         Player player = event.getPlayer();
-
         if (!player.isSneaking()) {
             return;
         }
@@ -79,7 +78,6 @@ public final class PorterStateListener implements Listener {
     public void onJoin(@NotNull PlayerJoinEvent event) {
 
         Player player = event.getPlayer();
-
         if (porterService.isCarrying(player) || !cargoItemService.hasCargoItem(player)) {
             return;
         }

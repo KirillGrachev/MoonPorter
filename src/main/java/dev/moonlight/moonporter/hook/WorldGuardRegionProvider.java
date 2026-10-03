@@ -45,11 +45,9 @@ public final class WorldGuardRegionProvider implements RegionProvider {
         ApplicableRegionSet applicable = query.getApplicableRegions(position);
 
         for (ProtectedRegion region : applicable) {
-
             if (regions.contains(region.getId())) {
                 return true;
             }
-
         }
 
         return false;
@@ -70,7 +68,6 @@ public final class WorldGuardRegionProvider implements RegionProvider {
         }
 
         RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
-
         RegionManager regionManager = container.get(BukkitAdapter.adapt(world));
 
         if (regionManager == null) {

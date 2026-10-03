@@ -66,7 +66,6 @@ public final class DeliveryWatchdog {
         }
 
         task = new BukkitRunnable() {
-
             @Override
             public void run() {
                 tick();
@@ -92,10 +91,8 @@ public final class DeliveryWatchdog {
         }
 
         if (registry.size() == 0) {
-
             stop();
             return;
-
         }
 
         long now = System.currentTimeMillis();
@@ -103,13 +100,11 @@ public final class DeliveryWatchdog {
         for (DeliverySession session : registry.snapshot()) {
 
             Player player = Bukkit.getPlayer(session.playerId());
-
             if (player == null || !player.isOnline()) {
                 continue;
             }
 
             bossBarService.update(player, session, now);
-
             CancelReason reason = detectViolation(player, session, now);
 
             if (reason == null) {
@@ -166,10 +161,8 @@ public final class DeliveryWatchdog {
     private void applyViolationEffects(@NotNull Player player, @NotNull CancelReason reason) {
 
         if (reason == CancelReason.FLYING && config.isResetFlightEnabled()) {
-
             player.setFlying(false);
             player.setAllowFlight(false);
-
         }
 
         if (reason == CancelReason.GAMEMODE && config.isResetGamemodeEnabled()) {
